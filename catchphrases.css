@@ -1,0 +1,26 @@
+/* Catchphrase carousel styles */
+.catchphrase-container {
+    height: 1.8em;
+    overflow: hidden;
+    position: relative;
+    margin-top: 20px;
+}
+
+.catchphrase {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    opacity: 0;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-style: italic;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    transform: translateY(10px);
+    transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+}
+
+.catchphrase.active {
+    opacity: 1;
+    transform: translateY(0);
+}

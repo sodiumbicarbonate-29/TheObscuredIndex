@@ -1,0 +1,43 @@
+<?php
+session_start();
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codex Hollow</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div id="logo">
+            <a href="index.php">
+                <img src="images/logo.png" alt="Website Logo">
+            </a>
+        </div>
+        
+        <nav id="navbar">
+            <ul>
+                <li><a href="index.php">Home</a></li>
+                <li><a href="about.php">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1>Welcome to My Website</h1>
+            <p>This is the main content area of the website.</p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; <?php echo date('Y'); ?> My Website. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
