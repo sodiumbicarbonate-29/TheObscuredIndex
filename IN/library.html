@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+<style>body { margin: 0; }</style>
+</helmet>
+
+<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; display: flex; flex-direction: column; background: #0e0a17;">
+
+  <header style="position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; min-height: 72px; padding: 12px 24px; background: rgba(14, 10, 23, 0.85); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08);">
+    <a href="dashboard.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+      <img src="images/logo3.png" alt="The Obscured Index logo" style="height: 40px; width: 40px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(162,155,254,0.35));">
+      <span style="font-family: 'Cinzel', serif; font-weight: 600; font-size: 1.05rem; color: #f5f3fb; letter-spacing: 0.02em;">The Obscured Index</span>
+    </a>
+    <nav style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+      <a href="dashboard.html" style="font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.04em; color: rgba(245,243,251,0.75); text-decoration: none;" style-hover="color: #ffffff;">HOME</a>
+      <a href="library.html" style="font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.04em; color: #ffffff; text-decoration: none;">LIBRARY</a>
+      <a href="add-manhwa.html" style="font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.04em; color: #0e0a17; text-decoration: none; background: linear-gradient(135deg, #a29bfe, #8a2be2); padding: 9px 16px; border-radius: 999px; font-weight: 600;">+ ADD NEW</a>
+      <a href="obscured-index-landing.html" style="font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.04em; color: rgba(245,243,251,0.55); text-decoration: none;" style-hover="color: #ffffff;">LOGOUT</a>
+    </nav>
+  </header>
+
+  <main style="flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; padding: 36px 24px 60px;">
+    <h1 style="font-family: 'Playfair Display', serif; font-weight: 500; color: #ffffff; font-size: 1.9rem; margin: 0 0 6px;">Your Library</h1>
+    <p style="color: rgba(255,255,255,0.55); margin: 0 0 26px; font-size: 0.95rem;">{{ resultCount }} titles obscured in these halls.</p>
+
+    <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 20px;">
+      <input value="{{ search }}" onInput="{{ onSearch }}" type="text" placeholder="Search by title..." style="flex: 1; min-width: 220px; box-sizing: border-box; padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #fff; font-size: 0.9rem;" style-focus="outline: none; border-color: #a29bfe;">
+    </div>
+
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 30px;">
+      <sc-for list="{{ statuses }}" as="s" hint-placeholder-count="4">
+        <button onClick="{{ setStatus }}" data-status="{{ s.name }}" style="font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.04em; padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.18); cursor: pointer; white-space: nowrap; background: {{ s.bg }}; color: {{ s.color }};">{{ s.name }}</button>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px;">
+        <sc-for list="{{ filtered }}" as="m" hint-placeholder-count="8">
+          <a href="view-manhwa.html" style="text-decoration: none; display: block; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+            <div style="position: relative; height: 200px; background: repeating-linear-gradient(45deg, #241f30, #241f30 10px, #2c2438 10px, #2c2438 20px); display: flex; align-items: center; justify-content: center;">
+              <span style="font-family: monospace; font-size: 0.65rem; color: rgba(255,255,255,0.35);">cover art</span>
+              <span style="position: absolute; top: 10px; right: 10px; font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.03em; padding: 4px 10px; border-radius: 999px; background: {{ m.statusBg }}; color: #17111f; font-weight: 600; white-space: nowrap;">{{ m.status }}</span>
+            </div>
+            <div style="padding: 14px;">
+              <h3 style="margin: 0 0 4px; font-size: 0.9rem; color: #f5f3fb; font-weight: 600;">{{ m.title }}</h3>
+              <p style="margin: 0; font-size: 0.75rem; color: #c9bffc; font-style: italic;">{{ m.genre }}</p>
+            </div>
+          </a>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+      <div style="text-align: center; padding: 60px 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px;">
+        <p style="font-family: 'Playfair Display', serif; font-style: italic; color: rgba(255,255,255,0.6); font-size: 1.1rem; margin: 0;">Nothing obscured enough to match that search.</p>
+      </div>
+    </sc-if>
+  </main>
+
+  <footer style="background: rgba(14,10,23,0.95); border-top: 1px solid rgba(255,255,255,0.08); padding: 20px 32px; text-align: center;">
+    <p style="font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.05em; color: rgba(245,243,251,0.5); margin: 0;">&copy; 2026 &mdash; The Obscured Index. All rights reserved.</p>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    search: '',
+    activeStatus: 'All',
+    statusOptions: ['All', 'Currently Reading', 'Completed', 'Plan to Read', 'Dropped'],
+    manhwas: [
+      { title: 'Moonlit Requiem', genre: 'Fantasy', status: 'Currently Reading' },
+      { title: 'The Silver Thorn', genre: 'BL', status: 'Currently Reading' },
+      { title: 'Winter\u2019s Bloodline', genre: 'Straight', status: 'Completed' },
+      { title: 'Hollow Court', genre: 'No Romance', status: 'Completed' },
+      { title: 'Ashveil Chronicles', genre: 'Fantasy', status: 'Plan to Read' },
+      { title: 'Crimson Pact', genre: 'BL', status: 'Plan to Read' },
+      { title: 'Paper Moon', genre: 'Straight', status: 'Dropped' },
+      { title: 'Thistle & Thorn', genre: 'Fantasy', status: 'Completed' },
+    ],
+  };
+
+  onSearch = (e) => this.setState({ search: e.target.value });
+  setStatus = (e) => this.setState({ activeStatus: e.currentTarget.getAttribute('data-status') });
+
+  statusColor(status) {
+    const map = {
+      'Currently Reading': '#a29bfe',
+      'Completed': '#00b894',
+      'Plan to Read': '#fdcb6e',
+      'Dropped': '#fd79a8',
+    };
+    return map[status] || '#a29bfe';
+  }
+
+  renderVals() {
+    const { search, activeStatus, manhwas, statusOptions } = this.state;
+    const q = search.trim().toLowerCase();
+    const filtered = manhwas.filter(m =>
+      (activeStatus === 'All' || m.status === activeStatus) &&
+      (!q || m.title.toLowerCase().includes(q))
+    ).map(m => ({ ...m, statusBg: this.statusColor(m.status) }));
+
+    const statuses = statusOptions.map(name => ({
+      name,
+      bg: name === activeStatus ? 'linear-gradient(135deg, #a29bfe, #8a2be2)' : 'rgba(255,255,255,0.05)',
+      color: name === activeStatus ? '#17111f' : 'rgba(255,255,255,0.75)',
+    }));
+
+    return {
+      search,
+      onSearch: this.onSearch,
+      setStatus: this.setStatus,
+      statuses,
+      filtered,
+      hasResults: filtered.length > 0,
+      noResults: filtered.length === 0,
+      resultCount: filtered.length,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

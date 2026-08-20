@@ -1,44 +1,32 @@
 <?php
-$db_config = [
-    'local' => [
-        'host' => 'localhost',
-        'user' => 'root',
-        'pass' => '',
-        'name' => 'TheObscuredIndex'
-    ],
-    'online' => [
-        'host' => 'localhost', 
-        'user' => 's22800098_TheObscuredIndex',
-        'pass' => 'TheObscuredIndex',
-        'name' => 's22800098_TheObscuredIndex'
-    ]
-];
-
-if (isset($_SERVER['SERVER_NAME']) && ($_SERVER['SERVER_NAME'] == 'theobscuredindex.cism.org' || $_SERVER['SERVER_NAME'] == 'theobscuredindex.dinnesh-nicole.com')) {
-    $environment = 'online';
-} else if (isset($_SERVER['SERVER_NAME']) && ($_SERVER['SERVER_NAME'] == 'localhost' || $_SERVER['SERVER_NAME'] == '127.0.0.1')) {
-    $environment = 'local';
-} else if (isset($_SERVER['SERVER_ADDR']) && $_SERVER['SERVER_ADDR'] == '127.0.0.1') {
-    $environment = 'local';
+if (getenv('DATABASE_URL')) {
+    $url = parse_url(getenv('DATABASE_URL'));
+    $host = $url['host'];
+    $user = $url['user'];
+    $pass = $url['pass'];
+    $name = ltrim($url['path'], '/');
+    $port = $url['port'] ?? 3306;
+} elseif (getenv('MYSQL_HOST')) {
+    $host = getenv('mysql-r32t.railway.internal');
+    $user = getenv('root');
+    $pass = getenv('FodgetTiXwPwFSbcVwoLdxXtecIblmqX');
+    $name = getenv('railway');
+    $port = getenv('3306') ?? 3306;
 } else {
-    $environment = 'online';
+    // Local development
+    $host = 'localhost';
+    $user = 'root';
+    $pass = '';
+    $name = 'TheObscuredIndex';
+    $port = 3306;
 }
 
-$config = $db_config[$environment];
-
-$conn = @mysqli_connect($config['host'], $config['user'], $config['pass'], $config['name']);
+$conn = @mysqli_connect($host, $user, $pass, $name, $port);
 
 if (!$conn) {
     error_log("Database connection failed: " . mysqli_connect_error());
-    
-    echo "<div style='color:red; padding:20px; margin:20px; border:1px solid red; background:#fff;'>";
-    echo "<h3>Connection Error</h3>";
-    echo "<p>Could not connect to the database. Please check your connection settings.</p>";
-    echo "<p>Server: " . (isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'unknown') . "</p>";
-    echo "<p>Environment: " . $environment . "</p>";
-    echo "<p>Error: " . mysqli_connect_error() . "</p>";
-    echo "</div>";
-    exit;
+    http_response_code(500);
+    die("Database connection failed");
 }
 
 mysqli_set_charset($conn, "utf8mb4");

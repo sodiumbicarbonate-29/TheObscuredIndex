@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-require_once '../includes/db_connect.php';
+require_once '../../includes/db_connect.php';
 
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
@@ -83,8 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $new_filename = 'uploads/covers/' . uniqid() . '.' . $filetype;
                     $upload_dir = '../' . $new_filename;
                     
-                    if (!is_dir('../uploads/covers')) {
-                        mkdir('../uploads/covers', 0777, true);
+                    if (!is_dir('../../uploads/covers')) {
+                        mkdir('../../uploads/covers', 0777, true);
                     }
                     
                     if (move_uploaded_file($_FILES['new_cover_image']['tmp_name'], $upload_dir)) {
@@ -569,7 +569,7 @@ if (isset($_GET['add']) && is_numeric($_GET['add'])) {
     </style>
 </head>
 <body>
-    <?php include '../includes/navbarIN.php'; ?>
+    <?php include '../../includes/navbarIN.php'; ?>
 
     <main>
         <div class="secret-header">
@@ -606,7 +606,7 @@ if (isset($_GET['add']) && is_numeric($_GET['add'])) {
                             <div class="manhwa-item">
                                 <input type="checkbox" name="manhwa_ids[]" value="<?php echo $manhwa['manhwa_id']; ?>" class="manhwa-checkbox">
                                 <div class="manhwa-cover-small">
-                                    <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
+                                    <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
                                 </div>
                                 <div class="manhwa-details">
                                     <h3 class="manhwa-title-small"><?php echo htmlspecialchars($manhwa['title']); ?></h3>
@@ -675,8 +675,8 @@ if (isset($_GET['add']) && is_numeric($_GET['add'])) {
     </main>
 
     <?php 
-    $root_path = '../';
-    include '../includes/footer.php'; 
+    $root_path = '../../';
+    include '../../includes/footer.php'; 
     ?>
 
     <script>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; }
+  @keyframes twinkle { 0%,100% { opacity: 0; transform: scale(0.4); } 50% { opacity: 1; transform: scale(1); } }
+</style>
+</helmet>
+
+<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; display: flex; flex-direction: column; background: #0e0a17;">
+
+  <header style="position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; min-height: 72px; padding: 12px 24px; background: rgba(14, 10, 23, 0.85); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08);">
+    <a href="dashboard.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+      <img src="images/logo3.png" alt="The Obscured Index logo" style="height: 40px; width: 40px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(162,155,254,0.35));">
+      <span style="font-family: 'Cinzel', serif; font-weight: 600; font-size: 1.05rem; color: #f5f3fb; letter-spacing: 0.02em;">The Obscured Index</span>
+    </a>
+    <nav style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+      <a href="dashboard.html" style="font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.04em; color: #ffffff; text-decoration: none;">HOME</a>
+      <a href="library.html" style="font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.04em; color: rgba(245,243,251,0.75); text-decoration: none;" style-hover="color: #ffffff;">LIBRARY</a>
+      <a href="add-manhwa.html" style="font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.04em; color: #0e0a17; text-decoration: none; background: linear-gradient(135deg, #a29bfe, #8a2be2); padding: 9px 16px; border-radius: 999px; font-weight: 600;">+ ADD NEW</a>
+      <a href="obscured-index-landing.html" style="font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.04em; color: rgba(245,243,251,0.55); text-decoration: none;" style-hover="color: #ffffff;">LOGOUT</a>
+    </nav>
+  </header>
+
+  <div style="position: relative; height: 260px; overflow: hidden;">
+    <img src="images/stats-card.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;">
+    <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(14,10,23,0.35) 0%, rgba(14,10,23,0.85) 100%);"></div>
+    <div style="position: absolute; top: 18%; left: 20%; width: 4px; height: 4px; border-radius: 50%; background: #fff; box-shadow: 0 0 6px 2px rgba(255,255,255,0.7); animation: twinkle 3s ease-in-out infinite;"></div>
+    <div style="position: absolute; top: 30%; left: 75%; width: 4px; height: 4px; border-radius: 50%; background: #fff; box-shadow: 0 0 6px 2px rgba(255,255,255,0.7); animation: twinkle 2.6s ease-in-out infinite 0.7s;"></div>
+    <div style="position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); max-width: 640px; text-align: center; padding: 14px 28px; background: rgba(20,15,32,0.55); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.14); border-radius: 999px;">
+      <p style="margin: 0; font-family: 'Playfair Display', serif; font-style: italic; color: #f0ecfb; font-size: 1rem;">{{ welcomeQuote }}</p>
+    </div>
+  </div>
+
+  <main style="flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; padding: 32px 24px 60px;">
+    <h1 style="font-family: 'Playfair Display', serif; font-weight: 500; color: #ffffff; font-size: 1.9rem; margin: 0 0 6px;">Welcome back, Reader <a href="secret-shelf.html" style="text-decoration: none; font-size: 1.3rem; vertical-align: middle;" title="???">&#129497;&#8205;&#9792;&#65039;</a></h1>
+    <p style="color: rgba(255,255,255,0.55); margin: 0 0 24px; font-size: 0.95rem;">Track your manhwa collection</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 14px; margin-bottom: 32px;">
+      <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 18px; text-align: center;">
+        <h3 style="font-family: 'Cinzel', serif; color: #c9bffc; font-size: 1.8rem; margin: 0 0 4px;">7</h3>
+        <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 0.75rem; letter-spacing: 0.05em;">READING</p>
+      </div>
+      <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 18px; text-align: center;">
+        <h3 style="font-family: 'Cinzel', serif; color: #c9bffc; font-size: 1.8rem; margin: 0 0 4px;">23</h3>
+        <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 0.75rem; letter-spacing: 0.05em;">COMPLETED</p>
+      </div>
+      <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 18px; text-align: center;">
+        <h3 style="font-family: 'Cinzel', serif; color: #c9bffc; font-size: 1.8rem; margin: 0 0 4px;">12</h3>
+        <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 0.75rem; letter-spacing: 0.05em;">PLAN TO READ</p>
+      </div>
+      <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 18px; text-align: center;">
+        <h3 style="font-family: 'Cinzel', serif; color: #c9bffc; font-size: 1.8rem; margin: 0 0 4px;">42</h3>
+        <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 0.75rem; letter-spacing: 0.05em;">TOTAL</p>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 36px;">
+      <sc-for list="{{ genres }}" as="g" hint-placeholder-count="5">
+        <button onClick="{{ setGenre }}" data-genre="{{ g.name }}" style="font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.04em; padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.18); cursor: pointer; white-space: nowrap; background: {{ g.bg }}; color: {{ g.color }};">{{ g.name }}</button>
+      </sc-for>
+      <input value="{{ newGenre }}" onInput="{{ onNewGenreChange }}" onKeyDown="{{ onNewGenreKeyDown }}" type="text" placeholder="Add a genre..." style="font-size: 0.75rem; padding: 8px 14px; border-radius: 999px; border: 1px dashed rgba(255,255,255,0.3); background: transparent; color: #fff; width: 140px;" style-focus="outline: none; border-color: #a29bfe;">
+      <button onClick="{{ addGenre }}" style="font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.04em; padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.08); color: #c9bffc; cursor: pointer; white-space: nowrap;">+ ADD</button>
+    </div>
+
+    <h2 style="font-family: 'Cinzel', serif; color: #f0ecfb; font-size: 1.15rem; letter-spacing: 0.03em; margin: 0 0 16px; display: flex; justify-content: space-between; align-items: baseline;">
+      CONTINUE READING
+      <a href="library.html" style="font-family: 'Segoe UI', sans-serif; font-size: 0.8rem; color: #c9bffc; text-decoration: none; font-weight: 600;">View all</a>
+    </h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; margin-bottom: 40px;">
+      <sc-for list="{{ continuing }}" as="m" hint-placeholder-count="4">
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+          <div style="height: 180px; background: repeating-linear-gradient(45deg, #241f30, #241f30 10px, #2c2438 10px, #2c2438 20px); display: flex; align-items: center; justify-content: center;">
+            <span style="font-family: monospace; font-size: 0.65rem; color: rgba(255,255,255,0.35);">cover art</span>
+          </div>
+          <div style="padding: 14px;">
+            <h3 style="margin: 0 0 4px; font-size: 0.92rem; color: #f5f3fb; font-weight: 600;">{{ m.title }}</h3>
+            <p style="margin: 0 0 12px; font-size: 0.75rem; color: #c9bffc; font-style: italic;">{{ m.genre }}</p>
+            <div style="display: flex; gap: 8px;">
+              <span style="flex: 1; text-align: center; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.03em; background: linear-gradient(135deg, #a29bfe, #6c5ce7); color: #17111f; padding: 8px; border-radius: 999px; font-weight: 600;">READ</span>
+              <span style="flex: 1; text-align: center; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.03em; border: 1px solid rgba(255,255,255,0.25); color: rgba(255,255,255,0.75); padding: 8px; border-radius: 999px; font-weight: 600;">DONE</span>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <h2 style="font-family: 'Cinzel', serif; color: #f0ecfb; font-size: 1.15rem; letter-spacing: 0.03em; margin: 0 0 16px; display: flex; justify-content: space-between; align-items: baseline;">
+      PLAN TO READ
+      <a href="library.html" style="font-family: 'Segoe UI', sans-serif; font-size: 0.8rem; color: #c9bffc; text-decoration: none; font-weight: 600;">View all</a>
+    </h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px;">
+      <sc-for list="{{ plan }}" as="m" hint-placeholder-count="3">
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+          <div style="height: 180px; background: repeating-linear-gradient(45deg, #241f30, #241f30 10px, #2c2438 10px, #2c2438 20px); display: flex; align-items: center; justify-content: center;">
+            <span style="font-family: monospace; font-size: 0.65rem; color: rgba(255,255,255,0.35);">cover art</span>
+          </div>
+          <div style="padding: 14px;">
+            <h3 style="margin: 0 0 4px; font-size: 0.92rem; color: #f5f3fb; font-weight: 600;">{{ m.title }}</h3>
+            <p style="margin: 0 0 12px; font-size: 0.75rem; color: #c9bffc; font-style: italic;">{{ m.genre }}</p>
+            <span style="display: block; text-align: center; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.03em; background: linear-gradient(135deg, #b8a9f3, #7d71e4); color: #17111f; padding: 8px; border-radius: 999px; font-weight: 600;">START</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </main>
+
+  <footer style="background: rgba(14,10,23,0.95); border-top: 1px solid rgba(255,255,255,0.08); padding: 20px 32px; text-align: center;">
+    <p style="font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.05em; color: rgba(245,243,251,0.5); margin: 0;">&copy; 2026 &mdash; The Obscured Index. All rights reserved.</p>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    activeGenre: 'All',
+    welcomeQuote: "Oh no. You again. At this hour?",
+    genres: ['All', 'BL', 'Straight', 'No Romance', 'Fantasy', 'Action', 'Comedy', 'Drama', 'Horror', 'Isekai', 'Slice of Life', 'Thriller'],
+    newGenre: '',
+    manhwas: [
+      { title: 'Moonlit Requiem', genre: 'Fantasy', section: 'continuing' },
+      { title: 'The Silver Thorn', genre: 'BL', section: 'continuing' },
+      { title: 'Winter\u2019s Bloodline', genre: 'Straight', section: 'continuing' },
+      { title: 'Hollow Court', genre: 'No Romance', section: 'continuing' },
+      { title: 'Ashveil Chronicles', genre: 'Fantasy', section: 'plan' },
+      { title: 'Crimson Pact', genre: 'BL', section: 'plan' },
+      { title: 'Paper Moon', genre: 'Straight', section: 'plan' },
+    ],
+  };
+
+  setGenre = (e) => {
+    this.setState({ activeGenre: e.currentTarget.getAttribute('data-genre') });
+  };
+
+  onNewGenreChange = (e) => this.setState({ newGenre: e.target.value });
+
+  addGenre = () => {
+    const name = this.state.newGenre.trim();
+    if (!name || this.state.genres.some(g => g.toLowerCase() === name.toLowerCase())) return;
+    this.setState({ genres: [...this.state.genres, name], newGenre: '', activeGenre: name });
+  };
+
+  onNewGenreKeyDown = (e) => { if (e.key === 'Enter') this.addGenre(); };
+
+  renderVals() {
+    const { activeGenre, manhwas } = this.state;
+    const matches = (m) => activeGenre === 'All' || m.genre === activeGenre;
+    const sortedGenres = ['All', ...this.state.genres.filter(g => g !== 'All').sort((a, b) => a.localeCompare(b))];
+    const genres = sortedGenres.map(name => ({
+      name,
+      bg: name === activeGenre ? 'linear-gradient(135deg, #a29bfe, #8a2be2)' : 'rgba(255,255,255,0.05)',
+      color: name === activeGenre ? '#17111f' : 'rgba(255,255,255,0.75)',
+    }));
+    return {
+      welcomeQuote: this.state.welcomeQuote,
+      genres,
+      newGenre: this.state.newGenre,
+      onNewGenreChange: this.onNewGenreChange,
+      onNewGenreKeyDown: this.onNewGenreKeyDown,
+      addGenre: this.addGenre,
+      setGenre: this.setGenre,
+      continuing: manhwas.filter(m => m.section === 'continuing' && matches(m)),
+      plan: manhwas.filter(m => m.section === 'plan' && matches(m)),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

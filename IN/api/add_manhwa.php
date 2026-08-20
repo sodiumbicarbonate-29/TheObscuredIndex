@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-require_once '../includes/db_connect.php';
+require_once '../../includes/db_connect.php';
 
 $user_id = $_SESSION['user_id'];
 $message = '';
@@ -30,8 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $new_filename = 'uploads/covers/' . uniqid() . '.' . $filetype;
             $upload_dir = '../' . $new_filename;
             
-            if (!is_dir('../uploads/covers')) {
-                mkdir('../uploads/covers', 0777, true);
+            if (!is_dir('../../uploads/covers')) {
+                mkdir('../../uploads/covers', 0777, true);
             }
             
             if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $upload_dir)) {
@@ -451,7 +451,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </style>
 </head>
 <body>
-    <?php include '../includes/navbarIN.php'; ?>
+    <?php include '../../includes/navbarIN.php'; ?>
 
     <main>
         <div class="page-header">
@@ -551,8 +551,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </main>
 
    <?php 
-    $root_path = '../';
-    include '../includes/footer.php'; 
+    $root_path = '../../';
+    include '../../includes/footer.php'; 
     ?>
 
     <script>

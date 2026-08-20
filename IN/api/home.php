@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-require_once '../includes/db_connect.php';
+require_once '../../includes/db_connect.php';
 
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
@@ -1021,7 +1021,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     </style>
 </head>
 <body>
-    <?php include '../includes/navbarIN.php'; ?>
+    <?php include '../../includes/navbarIN.php'; ?>
 
     <main>
         <?php
@@ -1087,7 +1087,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             $active = true;
             $i = 0;
             while ($slide = mysqli_fetch_assoc($slideshow_result)): 
-                $cover = !empty($slide['cover_image']) ? '../' . $slide['cover_image'] : '../images/default-cover.jpg';
+                $cover = !empty($slide['cover_image']) ? '../' . $slide['cover_image'] : '../../images/default-cover.jpg';
                 $quote = !empty($quotes) && count($quotes) > 0 ? $quotes[$i % count($quotes)] : "";
                 error_log("Slide $i - Quote: " . ($quote ? $quote : "No quote"));
             ?>
@@ -1155,7 +1155,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
                 <?php while ($manhwa = mysqli_fetch_assoc($reading_result)): ?>
                     <div class="manhwa-card">
                         <div class="manhwa-cover">
-                            <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
+                            <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
                             <span class="manhwa-status status-<?php echo strtolower($manhwa['status']); ?>"><?php echo $manhwa['status']; ?></span>
                         </div>
                         <div class="manhwa-info">
@@ -1206,7 +1206,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
                 <?php while ($manhwa = mysqli_fetch_assoc($plan_result)): ?>
                     <div class="manhwa-card">
                         <div class="manhwa-cover">
-                            <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
+                            <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
                             <span class="manhwa-status status-<?php echo strtolower($manhwa['status']); ?>"><?php echo $manhwa['status']; ?></span>
                         </div>
                         <div class="manhwa-info">
@@ -1239,8 +1239,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     </main>
 
     <?php 
-    $root_path = '../';
-    include '../includes/footer.php'; 
+    $root_path = '../../';
+    include '../../includes/footer.php'; 
     ?>
 
     <script>

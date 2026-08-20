@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-require_once '../includes/db_connect.php';
+require_once '../../includes/db_connect.php';
 
 $user_id = $_SESSION['user_id'];
 $message = '';
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         
         if (in_array($ext, $allowed)) {
-            $upload_dir = '../uploads/covers/';
+            $upload_dir = '../../uploads/covers/';
             
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0755, true);
@@ -847,7 +847,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     </style>
 </head>
 <body>
-    <?php include '../includes/navbarIN.php'; ?>
+    <?php include '../../includes/navbarIN.php'; ?>
 
     <main>
         <a href="library.php" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Library</a>
@@ -867,7 +867,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         <div class="manhwa-container">
             <div class="manhwa-header">
                 <div class="manhwa-cover">
-                    <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
+                    <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
                     <div class="change-cover" onclick="document.getElementById('edit-btn').click()">
                         <i class="fas fa-camera"></i> Change Cover
                     </div>
@@ -1067,8 +1067,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     </div>
 
     <?php 
-    $root_path = '../';
-    include '../includes/footer.php'; 
+    $root_path = '../../';
+    include '../../includes/footer.php'; 
     ?>
     <script>
         console.log('Page loaded. Manhwa ID: <?php echo $manhwa_id; ?>');

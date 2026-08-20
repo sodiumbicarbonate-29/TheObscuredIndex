@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>body { margin: 0; }</style>
+</helmet>
+
+<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; display: flex; flex-direction: column; background: #0e0a17;">
+
+  <header style="position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; min-height: 72px; padding: 12px 24px; background: rgba(14, 10, 23, 0.85); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08);">
+    <a href="dashboard.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+      <img src="images/logo3.png" alt="The Obscured Index logo" style="height: 40px; width: 40px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(162,155,254,0.35));">
+      <span style="font-family: 'Cinzel', serif; font-weight: 600; font-size: 1.05rem; color: #f5f3fb; letter-spacing: 0.02em;">The Obscured Index</span>
+    </a>
+    <nav style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+      <a href="dashboard.html" style="font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.04em; color: rgba(245,243,251,0.75); text-decoration: none;" style-hover="color: #ffffff;">HOME</a>
+      <a href="library.html" style="font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.04em; color: #ffffff; text-decoration: none;">LIBRARY</a>
+      <a href="add-manhwa.html" style="font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.04em; color: #0e0a17; text-decoration: none; background: linear-gradient(135deg, #a29bfe, #8a2be2); padding: 9px 16px; border-radius: 999px; font-weight: 600;">+ ADD NEW</a>
+      <a href="obscured-index-landing.html" style="font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.04em; color: rgba(245,243,251,0.55); text-decoration: none;" style-hover="color: #ffffff;">LOGOUT</a>
+    </nav>
+  </header>
+
+  <main style="flex: 1; width: 100%; max-width: 900px; margin: 0 auto; padding: 32px 24px 60px;">
+    <a href="library.html" style="display: inline-flex; align-items: center; gap: 6px; color: #c9bffc; text-decoration: none; font-size: 0.85rem; margin-bottom: 18px;">&larr; Back to Library</a>
+
+    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+      <div style="display: flex; flex-wrap: wrap; gap: 28px; padding: 30px; background: linear-gradient(120deg, rgba(162,155,254,0.08), rgba(138,43,226,0.04));">
+        <image-slot id="view-manhwa-cover" shape="rounded" radius="8" placeholder="cover art" style="width: 200px; height: 300px; flex-shrink: 0;"></image-slot>
+
+        <div style="flex: 1; min-width: 240px;">
+          <h1 style="font-family: 'Playfair Display', serif; font-weight: 500; color: #fff; font-size: 1.9rem; margin: 0 0 16px;">Moonlit Requiem</h1>
+
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; font-size: 0.88rem;">
+            <div><span style="color: rgba(255,255,255,0.5); display: inline-block; width: 90px;">Author</span><span style="color: #f0ecfb;">Yuen Bae-rin</span></div>
+            <div><span style="color: rgba(255,255,255,0.5); display: inline-block; width: 90px;">Status</span><span style="background: #a29bfe; color: #17111f; padding: 3px 12px; border-radius: 999px; font-weight: 600; font-size: 0.75rem;">Ongoing</span></div>
+            <div><span style="color: rgba(255,255,255,0.5); display: inline-block; width: 90px;">Genre</span><span style="color: #c9bffc; font-style: italic;">Fantasy</span></div>
+            <div><span style="color: rgba(255,255,255,0.5); display: inline-block; width: 90px;">Added</span><span style="color: #f0ecfb;">March 14, 2026</span></div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.05); border-radius: 4px; padding: 16px; margin-bottom: 20px;">
+            <h3 style="font-family: 'Cinzel', serif; font-size: 0.85rem; letter-spacing: 0.04em; color: #c9bffc; margin: 0 0 10px;">YOUR READING STATUS</h3>
+            <p style="margin: 0 0 6px; color: #f0ecfb; font-size: 0.9rem;">Currently Reading</p>
+            <p style="margin: 0; color: rgba(255,255,255,0.5); font-size: 0.8rem;">Started: Mar 20, 2026</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px;">
+              <a href="#" style="text-decoration: none; white-space: nowrap; font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.03em; background: linear-gradient(135deg, #a29bfe, #6c5ce7); color: #17111f; padding: 9px 16px; border-radius: 999px; font-weight: 600;">READ NOW</a>
+              <button onClick="{{ toggleHistory }}" style="font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.03em; white-space: nowrap; background: rgba(253,121,168,0.2); color: #fd79a8; border: 1px solid rgba(253,121,168,0.4); padding: 9px 16px; border-radius: 999px; font-weight: 600; cursor: pointer;">{{ historyLabel }}</button>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onClick="{{ toggleEdit }}" style="font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.03em; white-space: nowrap; background: linear-gradient(135deg, #a29bfe, #8a2be2); color: #17111f; border: none; padding: 10px 18px; border-radius: 999px; font-weight: 600; cursor: pointer;">EDIT DETAILS</button>
+            <button onClick="{{ openDelete }}" style="font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.03em; white-space: nowrap; background: rgba(231,76,60,0.15); color: #ff8a80; border: 1px solid rgba(231,76,60,0.4); padding: 10px 18px; border-radius: 999px; font-weight: 600; cursor: pointer;">DELETE</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 28px 30px;">
+        <sc-if value="{{ showHistory }}" hint-placeholder-val="{{ false }}">
+          <h2 style="font-family: 'Cinzel', serif; color: #f0ecfb; font-size: 1rem; margin: 0 0 14px;">Rereading History</h2>
+          <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 10px; color: rgba(255,255,255,0.7); font-size: 0.85rem;">Started: Jan 05, 2026 &ndash; Finished: Jan 28, 2026</div>
+          <div style="color: rgba(255,255,255,0.7); font-size: 0.85rem;">Started: Nov 02, 2025 &ndash; Finished: Nov 30, 2025</div>
+        </sc-if>
+        <sc-if value="{{ showDescription }}" hint-placeholder-val="{{ true }}">
+          <h2 style="font-family: 'Cinzel', serif; color: #f0ecfb; font-size: 1rem; margin: 0 0 14px;">Description</h2>
+          <p style="color: rgba(255,255,255,0.72); line-height: 1.8; margin: 0; font-size: 0.92rem;">A cursed noble house, a forgotten grimoire, and a heroine who refuses to die quietly. Moonlit Requiem follows Isolde as she claws her way through court intrigue and blood magic to reclaim a throne that was never supposed to be hers.</p>
+        </sc-if>
+      </div>
+    </div>
+
+    <sc-if value="{{ showEdit }}" hint-placeholder-val="{{ false }}">
+      <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 28px; margin-top: 20px;">
+        <h2 style="font-family: 'Playfair Display', serif; color: #fff; font-size: 1.3rem; margin: 0 0 20px;">Edit Manhwa</h2>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <label style="display: block; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.06em; color: rgba(255,255,255,0.8); margin-bottom: 6px;">TITLE</label>
+            <input type="text" value="Moonlit Requiem" style="width: 100%; box-sizing: border-box; padding: 11px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 0.9rem;">
+          </div>
+          <div>
+            <label style="display: block; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.06em; color: rgba(255,255,255,0.8); margin-bottom: 6px;">DESCRIPTION</label>
+            <textarea style="width: 100%; box-sizing: border-box; min-height: 100px; padding: 11px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 0.9rem; font-family: inherit;">A cursed noble house, a forgotten grimoire, and a heroine who refuses to die quietly.</textarea>
+          </div>
+          <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 6px;">
+            <button onClick="{{ toggleEdit }}" style="font-family: 'Cinzel', serif; font-size: 0.78rem; letter-spacing: 0.03em; white-space: nowrap; background: transparent; color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.25); padding: 10px 20px; border-radius: 999px; font-weight: 600; cursor: pointer;">CANCEL</button>
+            <button onClick="{{ toggleEdit }}" style="font-family: 'Cinzel', serif; font-size: 0.78rem; letter-spacing: 0.03em; white-space: nowrap; background: linear-gradient(135deg, #a29bfe, #8a2be2); color: #17111f; border: none; padding: 10px 22px; border-radius: 999px; font-weight: 600; cursor: pointer;">SAVE CHANGES</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </main>
+
+  <sc-if value="{{ showDeleteModal }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 200;">
+      <div style="background: #1a1526; border: 1px solid rgba(255,255,255,0.14); border-radius: 4px; padding: 30px; max-width: 380px; width: 90%; text-align: center;">
+        <h3 style="font-family: 'Playfair Display', serif; color: #fff; margin: 0 0 12px;">Banish this scroll forever?</h3>
+        <p style="color: rgba(255,255,255,0.65); font-size: 0.9rem; margin: 0 0 22px;">"Moonlit Requiem" will vanish into the obscured index &mdash; no takebacks, no epilogue, no redemption arc. Sure you're not just hangry?</p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+          <button onClick="{{ closeDelete }}" style="font-family: 'Cinzel', serif; font-size: 0.78rem; white-space: nowrap; background: transparent; color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.25); padding: 10px 20px; border-radius: 999px; font-weight: 600; cursor: pointer;">CANCEL</button>
+          <a href="library.html" style="text-decoration: none; font-family: 'Cinzel', serif; font-size: 0.78rem; white-space: nowrap; background: #e74c3c; color: #fff; padding: 10px 20px; border-radius: 999px; font-weight: 600;">DELETE</a>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <footer style="background: rgba(14,10,23,0.95); border-top: 1px solid rgba(255,255,255,0.08); padding: 20px 32px; text-align: center;">
+    <p style="font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.05em; color: rgba(245,243,251,0.5); margin: 0;">&copy; 2026 &mdash; The Obscured Index. All rights reserved.</p>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { showEdit: false, showDeleteModal: false, showHistory: false };
+  toggleEdit = () => this.setState(s => ({ showEdit: !s.showEdit }));
+  openDelete = () => this.setState({ showDeleteModal: true });
+  closeDelete = () => this.setState({ showDeleteModal: false });
+  toggleHistory = () => this.setState(s => ({ showHistory: !s.showHistory }));
+
+  renderVals() {
+    const { showEdit, showDeleteModal, showHistory } = this.state;
+    return {
+      showEdit, showDeleteModal, showHistory,
+      showDescription: !showHistory,
+      historyLabel: showHistory ? 'SHOW DESCRIPTION' : 'SHOW REREAD HISTORY',
+      toggleEdit: this.toggleEdit,
+      openDelete: this.openDelete,
+      closeDelete: this.closeDelete,
+      toggleHistory: this.toggleHistory,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

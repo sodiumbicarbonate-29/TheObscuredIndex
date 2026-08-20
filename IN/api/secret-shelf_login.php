@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-require_once '../includes/db_connect.php';
+require_once '../../includes/db_connect.php';
 
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
@@ -288,7 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </style>
 </head>
 <body>
-    <?php include '../includes/navbarIN.php'; ?>
+    <?php include '../../includes/navbarIN.php'; ?>
 
     <main>
         <div class="secret-header">
@@ -323,8 +323,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </main>
 
     <?php 
-    $root_path = '../';
-    include '../includes/footer.php'; 
+    $root_path = '../../';
+    include '../../includes/footer.php'; 
     ?>
 
     <script>

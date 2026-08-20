@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-require_once '../includes/db_connect.php';
+require_once '../../includes/db_connect.php';
 
 $user_id = $_SESSION['user_id'];
 
@@ -1109,7 +1109,7 @@ $total_manhwas = $total_row['total'];
     </style>
 </head>
 <body>
-    <?php include '../includes/navbarIN.php'; ?>
+    <?php include '../../includes/navbarIN.php'; ?>
 
     <main>
         <div class="page-header">
@@ -1192,7 +1192,7 @@ $total_manhwas = $total_row['total'];
                 ?>
                         <div class="manhwa-card" data-has-link="<?php echo $manhwa['has_reading_link']; ?>" data-manhwa-id="<?php echo $manhwa['manhwa_id']; ?>">
                         <div class="manhwa-cover">
-                            <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
+                            <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
                             <span class="manhwa-status status-<?php echo htmlspecialchars($manhwa['status']); ?>"><?php echo htmlspecialchars($manhwa['status']); ?></span>
                         </div>
                         <div class="manhwa-info">
@@ -1240,7 +1240,7 @@ $total_manhwas = $total_row['total'];
                     <div class="manhwa-list-item" data-has-link="<?php echo $manhwa['has_reading_link']; ?>" data-manhwa-id="<?php echo $manhwa['manhwa_id']; ?>">
 
                         <div class="manhwa-cover">
-                            <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
+                            <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
                             <span class="manhwa-status status-<?php echo htmlspecialchars($manhwa['status']); ?>"><?php echo htmlspecialchars($manhwa['status']); ?></span>
                         </div>
                         <div class="manhwa-info">
@@ -1293,8 +1293,8 @@ $total_manhwas = $total_row['total'];
     </main>
 
    <?php 
-    $root_path = '../';
-    include '../includes/footer.php'; 
+    $root_path = '../../';
+    include '../../includes/footer.php'; 
     ?>
 
     <style>

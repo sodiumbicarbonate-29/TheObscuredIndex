@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-require_once '../includes/db_connect.php';
+require_once '../../includes/db_connect.php';
 
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
@@ -421,7 +421,7 @@ $total_manhwas = mysqli_num_rows($result);
     </style>
 </head>
 <body>
-    <?php include '../includes/navbarIN.php'; ?>
+    <?php include '../../includes/navbarIN.php'; ?>
 
     <main>
         <div class="secret-header">
@@ -442,7 +442,7 @@ $total_manhwas = mysqli_num_rows($result);
                     <?php while ($manhwa = mysqli_fetch_assoc($result)): ?>
                         <div class="manhwa-card">
                             <div class="manhwa-cover">
-                                <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
+                                <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
                                 <span class="manhwa-status status-<?php echo htmlspecialchars($manhwa['status']); ?>"><?php echo htmlspecialchars($manhwa['status']); ?></span>
                             </div>
                             <div class="manhwa-info">
@@ -473,8 +473,8 @@ $total_manhwas = mysqli_num_rows($result);
     </main>
 
     <?php 
-    $root_path = '../';
-    include '../includes/footer.php'; 
+    $root_path = '../../';
+    include '../../includes/footer.php'; 
     ?>
 
     <script>
