@@ -32,11 +32,11 @@ $query = "SELECT sm.*, m.title, m.author, m.status, m.genre, m.cover_image, m.re
           CASE WHEN m.reading_link IS NOT NULL AND m.reading_link != '' THEN 1 ELSE 0 END as has_reading_link
           FROM Secret_Manhwas sm
           JOIN Manhwas m ON sm.manhwa_id = m.manhwa_id
-          WHERE sm.user_id = ?
+          WHERE sm.user_id = ? AND m.user_id = ?
           ORDER BY sm.added_date DESC";
 
 $stmt = mysqli_prepare($conn, $query);
-mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_bind_param($stmt, "ii", $user_id, $user_id);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 

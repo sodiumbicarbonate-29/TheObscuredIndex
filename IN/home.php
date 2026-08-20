@@ -11,7 +11,7 @@ require_once '../includes/db_connect.php';
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 
-$genres_query = "SELECT DISTINCT genre FROM Manhwas WHERE genre IS NOT NULL AND genre != '' ORDER BY genre";
+$genres_query = "SELECT DISTINCT genre FROM Manhwas WHERE user_id = $user_id AND genre IS NOT NULL AND genre != '' ORDER BY genre";
 $genres_result = mysqli_query($conn, $genres_query);
 $genres = [];
 while ($genre_row = mysqli_fetch_assoc($genres_result)) {
@@ -44,27 +44,27 @@ foreach ($romance_types as $type) {
 $reading_query = "SELECT m.*, urs.reading_status, urs.start_reading_date 
                  FROM Manhwas m 
                  JOIN User_Reading_Status urs ON m.manhwa_id = urs.manhwa_id 
-                 WHERE urs.user_id = ? AND (urs.reading_status = 'Currently Reading' OR urs.reading_status = 'Reread') 
+                 WHERE m.user_id = ? AND urs.user_id = ? AND (urs.reading_status = 'Currently Reading' OR urs.reading_status = 'Reread') 
                  ORDER BY urs.last_updated DESC 
                  LIMIT 5";
 $reading_stmt = mysqli_prepare($conn, $reading_query);
-mysqli_stmt_bind_param($reading_stmt, "i", $user_id);
+mysqli_stmt_bind_param($reading_stmt, "ii", $user_id, $user_id);
 mysqli_stmt_execute($reading_stmt);
 $reading_result = mysqli_stmt_get_result($reading_stmt);
 
 $completed_query = "SELECT m.*, urs.finish_reading_date 
                    FROM Manhwas m 
                    JOIN User_Reading_Status urs ON m.manhwa_id = urs.manhwa_id 
-                   WHERE urs.user_id = ? AND urs.reading_status = 'Done' 
+                   WHERE m.user_id = ? AND urs.user_id = ? AND urs.reading_status = 'Done' 
                    ORDER BY urs.finish_reading_date DESC 
                    LIMIT 5";
 $completed_stmt = mysqli_prepare($conn, $completed_query);
-mysqli_stmt_bind_param($completed_stmt, "i", $user_id);
+mysqli_stmt_bind_param($completed_stmt, "ii", $user_id, $user_id);
 mysqli_stmt_execute($completed_stmt);
 $completed_result = mysqli_stmt_get_result($completed_stmt);
 
 $new_uploads_query = "SELECT * FROM Manhwas 
-                     WHERE upload_date >= DATE_SUB(NOW(), INTERVAL 30 DAY) 
+                     WHERE user_id = $user_id AND upload_date >= DATE_SUB(NOW(), INTERVAL 30 DAY) 
                      ORDER BY upload_date DESC 
                      LIMIT 5";
 $new_uploads_result = mysqli_query($conn, $new_uploads_query);
@@ -83,11 +83,11 @@ $stats = mysqli_fetch_assoc($stats_result);
 $plan_query = "SELECT m.*, urs.reading_status 
                FROM Manhwas m 
                JOIN User_Reading_Status urs ON m.manhwa_id = urs.manhwa_id 
-               WHERE urs.user_id = ? AND urs.reading_status = 'Plan to Read' 
+               WHERE m.user_id = ? AND urs.user_id = ? AND urs.reading_status = 'Plan to Read' 
                ORDER BY urs.last_updated DESC 
                LIMIT 5";
 $plan_stmt = mysqli_prepare($conn, $plan_query);
-mysqli_stmt_bind_param($plan_stmt, "i", $user_id);
+mysqli_stmt_bind_param($plan_stmt, "ii", $user_id, $user_id);
 mysqli_stmt_execute($plan_stmt);
 $plan_result = mysqli_stmt_get_result($plan_stmt);
 
@@ -1077,7 +1077,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             error_log("Using default afternoon message, but setting quotes array");
         }
         
-        $slideshow_query = "SELECT cover_image FROM Manhwas ORDER BY RAND() LIMIT 10";
+        $slideshow_query = "SELECT cover_image FROM Manhwas WHERE user_id = $user_id ORDER BY RAND() LIMIT 10";
         $slideshow_result = mysqli_query($conn, $slideshow_query);
         
         if (mysqli_num_rows($slideshow_result) > 0):

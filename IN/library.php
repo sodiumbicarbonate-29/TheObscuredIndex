@@ -57,7 +57,7 @@ $query = "SELECT m.*, urs.reading_status, urs.start_reading_date, urs.finish_rea
           CASE WHEN m.reading_link IS NOT NULL AND m.reading_link != '' THEN 1 ELSE 0 END as has_reading_link
           FROM Manhwas m 
           LEFT JOIN User_Reading_Status urs ON m.manhwa_id = urs.manhwa_id AND urs.user_id = $user_id 
-          WHERE 1=1";
+          WHERE m.user_id = $user_id";
 
 if (!empty($search)) {
     $search = mysqli_real_escape_string($conn, $search);
@@ -101,7 +101,7 @@ switch ($sort_by) {
 
 $result = mysqli_query($conn, $query);
 
-$total_query = "SELECT COUNT(*) as total FROM Manhwas";
+$total_query = "SELECT COUNT(*) as total FROM Manhwas WHERE user_id = $user_id";
 $total_result = mysqli_query($conn, $total_query);
 $total_row = mysqli_fetch_assoc($total_result);
 $total_manhwas = $total_row['total'];

@@ -17,7 +17,7 @@ $sort_by = isset($_GET['sort']) ? $_GET['sort'] : 'title_asc';
 $query = "SELECT m.*, urs.reading_status, urs.start_reading_date, urs.finish_reading_date 
           FROM Manhwas m 
           LEFT JOIN User_Reading_Status urs ON m.manhwa_id = urs.manhwa_id AND urs.user_id = $user_id 
-          WHERE 1=1";
+          WHERE m.user_id = $user_id";
 
 if (!empty($search)) {
     $search = mysqli_real_escape_string($conn, $search);

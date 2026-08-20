@@ -25,7 +25,7 @@ if (mysqli_num_rows($access_result) == 0) {
 }
 
 $query = "SELECT * FROM Manhwas 
-          WHERE is_private = 0
+          WHERE user_id = $user_id AND is_private = 0
           ORDER BY title ASC";
 
 $stmt = mysqli_prepare($conn, $query);
@@ -101,11 +101,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Always set is_private to 1 for secret shelf manhwas
                 $is_private = 1;
                 
-                // Insert directly into the main Manhwas table with is_private flag
-                $insert_query = "INSERT INTO Manhwas (title, author, status, genre, description, reading_link, cover_image, upload_date, is_private) 
-                               VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)";
+                // Insert directly into the main Manhwas table with is_private flag and user_id
+                $insert_query = "INSERT INTO Manhwas (user_id, title, author, status, genre, description, reading_link, cover_image, upload_date, is_private) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)";
                 $insert_stmt = mysqli_prepare($conn, $insert_query);
-                mysqli_stmt_bind_param($insert_stmt, "sssssssi", $title, $author, $status, $genre, $description, $reading_link, $cover_image, $is_private);
+                mysqli_stmt_bind_param($insert_stmt, "issssssi", $user_id, $title, $author, $status, $genre, $description, $reading_link, $cover_image, $is_private);
                 
                 if (mysqli_stmt_execute($insert_stmt)) {
                     $message = "New manhwa \"" . htmlspecialchars($title) . "\" added directly to your secret shelf!";

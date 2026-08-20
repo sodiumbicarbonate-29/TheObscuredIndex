@@ -19,9 +19,9 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 
 $manhwa_id = (int)$_GET['id'];
 
-$query = "SELECT * FROM Manhwas WHERE manhwa_id = ?";
+$query = "SELECT * FROM Manhwas WHERE manhwa_id = ? AND user_id = ?";
 $stmt = mysqli_prepare($conn, $query);
-mysqli_stmt_bind_param($stmt, "i", $manhwa_id);
+mysqli_stmt_bind_param($stmt, "ii", $manhwa_id, $user_id);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 
@@ -117,9 +117,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     if (mysqli_stmt_execute($stmt)) {
         $message = "Manhwa updated successfully!";
         
-        $query = "SELECT * FROM Manhwas WHERE manhwa_id = ?";
+        $query = "SELECT * FROM Manhwas WHERE manhwa_id = ? AND user_id = ?";
         $stmt = mysqli_prepare($conn, $query);
-        mysqli_stmt_bind_param($stmt, "i", $manhwa_id);
+        mysqli_stmt_bind_param($stmt, "ii", $manhwa_id, $user_id);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $manhwa = mysqli_fetch_assoc($result);
@@ -242,9 +242,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     mysqli_stmt_bind_param($delete_reread_stmt, "ii", $user_id, $manhwa_id);
     mysqli_stmt_execute($delete_reread_stmt);
     
-    $delete_manhwa_query = "DELETE FROM Manhwas WHERE manhwa_id = ?";
+    $delete_manhwa_query = "DELETE FROM Manhwas WHERE manhwa_id = ? AND user_id = ?";
     $delete_manhwa_stmt = mysqli_prepare($conn, $delete_manhwa_query);
-    mysqli_stmt_bind_param($delete_manhwa_stmt, "i", $manhwa_id);
+    mysqli_stmt_bind_param($delete_manhwa_stmt, "ii", $manhwa_id, $user_id);
     
     if (mysqli_stmt_execute($delete_manhwa_stmt)) {
         header("Location: library.php?deleted=1");

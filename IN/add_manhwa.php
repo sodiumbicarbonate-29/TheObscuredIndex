@@ -49,12 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $title_esc = mysqli_real_escape_string($conn, $title);
         $author_esc = mysqli_real_escape_string($conn, $author);
         
-        // Check if manhwa already exists
-        $check_query = "SELECT manhwa_id FROM Manhwas WHERE title = '$title_esc'";
+        // Check if manhwa already exists for this user
+        $check_query = "SELECT manhwa_id FROM Manhwas WHERE title = '$title_esc' AND user_id = $user_id";
         $check_result = mysqli_query($conn, $check_query);
         
         if (mysqli_num_rows($check_result) > 0) {
-            $error = "A manhwa with this title already exists in the database.";
+            $error = "A manhwa with this title already exists in your library.";
         } else {
             $status_esc = mysqli_real_escape_string($conn, $status);
             $genre_esc = mysqli_real_escape_string($conn, $genre);
@@ -63,11 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $reading_link_esc = $reading_link ? mysqli_real_escape_string($conn, $reading_link) : 'NULL';
         
         if ($reading_link_esc === 'NULL') {
-            $query = "INSERT INTO Manhwas (title, author, status, genre, description, cover_image, reading_link) 
-                      VALUES ('$title_esc', '$author_esc', '$status_esc', '$genre_esc', '$description_esc', '$cover_image_esc', NULL)";
+            $query = "INSERT INTO Manhwas (user_id, title, author, status, genre, description, cover_image, reading_link) 
+                      VALUES ($user_id, '$title_esc', '$author_esc', '$status_esc', '$genre_esc', '$description_esc', '$cover_image_esc', NULL)";
         } else {
-            $query = "INSERT INTO Manhwas (title, author, status, genre, description, cover_image, reading_link) 
-                      VALUES ('$title_esc', '$author_esc', '$status_esc', '$genre_esc', '$description_esc', '$cover_image_esc', '$reading_link_esc')";
+            $query = "INSERT INTO Manhwas (user_id, title, author, status, genre, description, cover_image, reading_link) 
+                      VALUES ($user_id, '$title_esc', '$author_esc', '$status_esc', '$genre_esc', '$description_esc', '$cover_image_esc', '$reading_link_esc')";
         }
         
         if (mysqli_query($conn, $query)) {
