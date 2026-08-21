@@ -38,7 +38,7 @@
 
   <main style="flex: 1; position: relative;">
     <div style="position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-      <img src="images/index-background.jpeg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; filter: saturate(1.1);">
+      <img src="images/index-bckground.jpeg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; filter: saturate(1.1);">
       <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,26,18,0.55) 0%, rgba(30,50,30,0.3) 45%, rgba(12,20,14,0.92) 100%); z-index: 1;"></div>
 
       <div style="position: absolute; top: 15%; left: 4%; font-size: 20px; color: #ffd166; text-shadow: 0 0 10px rgba(255,209,102,0.8); animation: floaty 4s ease-in-out infinite; z-index: 2;">&#10022;</div>
