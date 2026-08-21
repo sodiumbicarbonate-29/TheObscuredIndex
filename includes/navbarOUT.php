@@ -185,10 +185,20 @@ header {
     }
 }
 </style>
+<?php
+$base_path = '';
+if (strpos($_SERVER['PHP_SELF'], '/IN/') !== false) {
+    if (strpos($_SERVER['PHP_SELF'], '/IN/secret-shelf/') !== false) {
+        $base_path = '../../';
+    } else {
+        $base_path = '../';
+    }
+}
+?>
 <header>
     <div id="logo">
-        <a href="index.php">
-            <img src="images/logo3.png" alt="The Obscured Index Logo">
+        <a href="<?php echo $base_path; ?>index.php">
+            <img src="<?php echo $base_path; ?>images/logo3.png" alt="The Obscured Index Logo">
         </a>
     </div>
     

@@ -174,12 +174,20 @@ header {
 }
 </style>
 <?php
-$in_subdir = strpos($_SERVER['PHP_SELF'], '/IN/') !== false && strpos($_SERVER['PHP_SELF'], '/IN/secret-shelf/') !== false;
-$home_path = $in_subdir ? "../home.php" : "home.php";
-$library_path = $in_subdir ? "../library.php" : "library.php";
-$add_path = $in_subdir ? "../add_manhwa.php" : "add_manhwa.php";
-$logout_path = $in_subdir ? "../../logout.php" : "../logout.php";
-$logo_path = $in_subdir ? "../../images/logo.png" : "../images/logo.png";
+// Determine base path based on current location
+$base_path = '';
+if (strpos($_SERVER['PHP_SELF'], '/IN/') !== false) {
+    if (strpos($_SERVER['PHP_SELF'], '/IN/secret-shelf/') !== false) {
+        $base_path = '../../';
+    } else {
+        $base_path = '../';
+    }
+}
+$home_path = $base_path . (strpos($_SERVER['PHP_SELF'], '/IN/') !== false ? 'IN/home.php' : 'index.php');
+$library_path = $base_path . 'IN/library.php';
+$add_path = $base_path . 'IN/add_manhwa.php';
+$logout_path = $base_path . 'logout.php';
+$logo_path = $base_path . 'images/logo.png';
 ?>
 
 <header>
