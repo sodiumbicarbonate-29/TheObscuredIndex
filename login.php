@@ -70,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   </header>
 
   <main style="flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-    <img src="images/stats-card.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;">
+    <img src="images/index-background.jpeg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;">
     <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(14,10,23,0.6) 0%, rgba(14,10,23,0.45) 45%, rgba(14,10,23,0.85) 100%); z-index: 1;"></div>
 
     <div style="position: absolute; top: 20%; left: 14%; width: 5px; height: 5px; border-radius: 50%; background: #fff; box-shadow: 0 0 8px 2px rgba(255,255,255,0.8); animation: twinkle 3.2s ease-in-out infinite; z-index: 2;"></div>
