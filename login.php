@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 require_once 'includes/db_connect.php';
 
 $error = "";
@@ -25,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['user_id'] = $user['user_id'];
                 $_SESSION['username'] = $user['username'];
                 
-                header("Location: loading.php?redirect=IN/home.php");
+                header("Location: IN/dashboard.html");
                 exit();
             } else {
                 $error = "Invalid username or password";
@@ -36,459 +35,77 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - The Obscured Index</title>
-    <link rel="icon" type="image/png" href="images/logo.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #8e44ad;
-            --secondary-color: #9b59b6;
-            --text-color: #2d3436;
-            --light-color: #f5f6fa;
-            --accent-color: #e84393;
-            --gold-color: #f1c40f;
-            --silver-color: #bdc3c7;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        html, body {
-            height: 100%;
-            width: 100%;
-        }
-        
-        body {
-            background: url('images/index/1.jpg') no-repeat center center fixed;
-            background-size: cover;
-            color: var(--text-color);
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-        
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: calc(100vh - 120px); 
-        }
-        
-        .container {
-            width: 100%;
-            max-width: 100%;
-            margin: 0;
-            padding: 20px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        
-        @media (max-width: 480px) {
-            .container {
-                padding: 10px;
-            }
-        }
-                
-        /* Login Form */
-        .form-container {
-            max-width: 300px;
-            width: 100%;
-            margin: 0 auto 40px;
-            background-color: rgba(255, 255, 255, 0.3);
-            padding: 15px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(142, 68, 173, 0.2), 
-                        0 0 20px rgba(142, 68, 173, 0.1),
-                        0 0 40px rgba(142, 68, 173, 0.05),
-                        0 0 60px rgba(241, 196, 15, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-top: 1px solid rgba(241, 196, 15, 0.3);
-            border-left: 1px solid rgba(241, 196, 15, 0.2);
-            transform: perspective(1000px) rotateX(2deg);
-            transition: all 0.5s ease;
-            animation: float 6s ease-in-out infinite;
-            position: relative;
-            overflow: visible;
-        }
-        
-        .form-container::before {
-            content: '';
-            position: absolute;
-            top: -15px;
-            left: -15px;
-            right: -15px;
-            bottom: -15px;
-            background: radial-gradient(circle at top left, rgba(241, 196, 15, 0.1) 0%, transparent 70%),
-                        radial-gradient(circle at bottom right, rgba(142, 68, 173, 0.1) 0%, transparent 70%);
-            z-index: -1;
-            border-radius: 20px;
-            filter: blur(10px);
-        }
-        
-        @media (max-width: 768px) {
-            .form-container {
-                max-width: 90%;
-                padding: 25px;
-                transform: none;
-                animation: none;
-            }
-            
-            .form-title {
-                font-size: 1.8rem;
-                margin-bottom: 20px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .form-container {
-                max-width: 80%;
-                padding: 10px;
-                transform: none;
-                animation: none;
-                box-shadow: 0 5px 15px rgba(108, 92, 231, 0.2);
-            }
-            
-            .form-title {
-                font-size: 1.2rem;
-                margin-bottom: 10px;
-            }
-            
-            .form-title::after {
-                width: 30px;
-                height: 2px;
-                bottom: -5px;
-            }
-            
-            .form-group {
-                margin-bottom: 8px;
-            }
-            
-            .form-group label {
-                margin-bottom: 2px;
-                font-size: 0.7rem;
-            }
-            
-            .form-group input {
-                padding: 5px 8px;
-                font-size: 0.7rem;
-                border-width: 1px;
-            }
-            
-            .btn {
-                padding: 6px;
-                font-size: 0.75rem;
-            }
-            
-            .register-link {
-                margin-top: 10px;
-                padding-top: 6px;
-                font-size: 0.7rem;
-            }
-            
-            .register-link::before {
-                font-size: 0.7rem;
-                top: -6px;
-            }
-            
-            .error-message {
-                padding: 6px;
-                font-size: 0.7rem;
-                margin-bottom: 10px;
-            }
-        }
-        
-        .form-container:hover {
-            transform: perspective(1000px) rotateX(0deg) scale(1.02);
-            box-shadow: 0 15px 35px rgba(108, 92, 231, 0.4), 
-                        0 0 25px rgba(108, 92, 231, 0.3),
-                        0 0 50px rgba(108, 92, 231, 0.2);
-        }
-        
-        @media (hover: none) {
-            .form-container:hover {
-                transform: none;
-            }
-        }
-        
-        @keyframes float {
-            0% {
-                transform: perspective(1000px) rotateX(2deg) translateY(0px);
-            }
-            50% {
-                transform: perspective(1000px) rotateX(1deg) translateY(-10px);
-            }
-            100% {
-                transform: perspective(1000px) rotateX(2deg) translateY(0px);
-            }
-        }
-        
-        .fairytale-title {
-            text-align: center;
-            color: #8e44ad;
-            margin-bottom: 5px;
-            font-size: 1.3rem;
-            font-weight: 700;
-            text-shadow: 0 2px 10px rgba(142, 68, 173, 0.4), 0 0 20px rgba(255, 255, 255, 0.3);
-            position: relative;
-            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-            letter-spacing: 1px;
-            line-height: 1.2;
-            padding: 15px 5px;
-        }
-        
-        .fairytale-title::before,
-        
-        .fairytale-title::before {
-            left: 0;
-        }
-        
-        .fairytale-title::after {
-            right: 0;
-        }
-        
-        .fairytale-subtitle {
-            text-align: center;
-            color:rgb(205, 50, 145);
-            margin-bottom: 10px;
-            font-size: 0.75rem;
-            font-style: italic;
-            font-family: 'Georgia', serif;
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3), 0 0 6px rgba(241, 196, 15, 0.8);
-            position: relative;
-            padding-bottom: 10px;
-            font-weight: 600;
-        }
-        
-        .fairytale-subtitle::after {
-            content: '❈';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            color:rgb(205, 50, 145);
-            font-size: 1rem;
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5), 0 0 8px rgba(241, 196, 15, 0.9);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.7; }
-            50% { transform: translateX(-50%) scale(1.2); opacity: 1; }
-        }
-        
-        .form-group {
-            margin-bottom: 8px;
-            position: relative;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 3px;
-            font-weight: 600;
-            color: var(--text-color);
-            transition: all 0.3s;
-            font-size: 0.8rem;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 7px 10px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            transition: all 0.3s;
-            background-color: rgba(255, 255, 255, 0.8);
-        }
-        
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 10px rgba(108, 92, 231, 0.2);
-            background-color: white;
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            width: 100%;
-            transition: all 0.3s;
-            box-shadow: 0 3px 8px rgba(108, 92, 231, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: all 0.6s;
-        }
-        
-        .btn:hover {
-            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(108, 92, 231, 0.4);
-        }
-        
-        .btn:hover::before {
-            left: 100%;
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .error-message {
-            color: #e74c3c;
-            background-color: rgba(250, 219, 216, 0.8);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            border-left: 4px solid #e74c3c;
-            box-shadow: 0 2px 10px rgba(231, 76, 60, 0.2);
-            animation: shake 0.5s ease-in-out;
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-        
-        .register-link {
-            text-align: center;
-            margin-top: 12px;
-            padding-top: 8px;
-            border-top: 1px solid rgba(108, 92, 231, 0.2);
-            position: relative;
-            font-size: 0.8rem;
-        }
-        
-        .register-link::before {
-            content: '✨';
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 0 10px;
-            color: var(--accent-color);
-        }
-        
-        .register-link a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 600;
-            position: relative;
-            padding: 3px 0;
-            transition: all 0.3s;
-        }
-        
-        .register-link a::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 2px;
-            bottom: 0;
-            left: 0;
-            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
-            transform: scaleX(0);
-            transform-origin: bottom right;
-            transition: transform 0.3s;
-        }
-        
-        .register-link a:hover {
-            text-decoration: none;
-            color: var(--accent-color);
-        }
-        
-        .register-link a:hover::after {
-            transform: scaleX(1);
-            transform-origin: bottom left;
-        }
-        
-        /* Footer */
-        footer {
-            background-color: rgba(255, 255, 255, 0.2);
-            padding: 10px 0;
-            text-align: center;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-            position: relative;
-            z-index: 10;
-            margin-top: auto;
-            width: 100%;
-            backdrop-filter: blur(8px);
-        }
-        
-        footer p {
-            font-size: 0.9rem;
-            color: var(--text-color);
-        }
-        
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" href="images/logo.png">
+<script src="IN/js/support.js"></script>
 </head>
 <body>
-    <?php include 'includes/navbarOUT.php'; ?>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; }
+  @keyframes twinkle { 0%,100% { opacity: 0; transform: scale(0.4); } 50% { opacity: 1; transform: scale(1); } }
+  @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  .error-message { background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.5); color: #ff6b6b; padding: 12px; border-radius: 8px; margin-bottom: 18px; text-align: center; font-size: 0.85rem; }
+</style>
+</helmet>
 
-    <main>
-        <h2 class="fairytale-title">✧ Not all heroes wear capes ✧</h2>
-        <div class="container">
-            <div class="form-container">
-                <p class="fairytale-subtitle">Once upon a time, they just needed their login details to read until 3 A.M.</p>
-                
-                <?php if (!empty($error)): ?>
-                    <div class="error-message"><?php echo $error; ?></div>
-                <?php endif; ?>
-                
-                <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required>
-                    </div>
-                    
-                    <button type="submit" class="btn">Click Me, I Dare You</button>
-                </form>
-                
-                <div class="register-link">
-                    Don't have an account? <a href="registration.php">Register here</a>
-                </div>
-            </div>
+<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; display: flex; flex-direction: column; background: #0e0a17;">
+
+  <header style="position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; height: 76px; padding: 0 32px; background: rgba(14, 10, 23, 0.45); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08);">
+    <a href="index.php" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+      <img src="images/logo3.png" alt="The Obscured Index logo" style="height: 44px; width: 44px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(162,155,254,0.35));">
+      <span style="font-family: 'Cinzel', serif; font-weight: 600; font-size: 1.15rem; color: #f5f3fb; letter-spacing: 0.02em;">The Obscured Index</span>
+    </a>
+    <nav style="display: flex; align-items: center; gap: 28px;">
+      <a href="index.php" style="font-family: 'Cinzel', serif; font-size: 0.85rem; letter-spacing: 0.04em; color: rgba(245,243,251,0.8); text-decoration: none;" style-hover="color: #ffffff;">HOME</a>
+      <a href="registration.php" style="font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.04em; color: #0e0a17; text-decoration: none; background: linear-gradient(135deg, #a29bfe, #8a2be2); padding: 10px 20px; border-radius: 999px; font-weight: 600; box-shadow: 0 4px 16px rgba(138,43,226,0.35);" style-hover="box-shadow: 0 6px 22px rgba(138,43,226,0.5);">SIGN UP</a>
+    </nav>
+  </header>
+
+  <main style="flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+    <img src="images/stats-card.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;">
+    <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(14,10,23,0.6) 0%, rgba(14,10,23,0.45) 45%, rgba(14,10,23,0.85) 100%); z-index: 1;"></div>
+
+    <div style="position: absolute; top: 20%; left: 14%; width: 5px; height: 5px; border-radius: 50%; background: #fff; box-shadow: 0 0 8px 2px rgba(255,255,255,0.8); animation: twinkle 3.2s ease-in-out infinite; z-index: 2;"></div>
+    <div style="position: absolute; top: 65%; left: 85%; width: 4px; height: 4px; border-radius: 50%; background: #fff; box-shadow: 0 0 6px 2px rgba(255,255,255,0.7); animation: twinkle 2.8s ease-in-out infinite 0.8s; z-index: 2;"></div>
+
+    <div style="position: relative; z-index: 3; width: 100%; max-width: 380px; margin: 96px 24px 48px; padding: 40px 36px; background: rgba(20, 15, 32, 0.5); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.14); border-radius: 4px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); animation: floaty 6s ease-in-out infinite;">
+      <p style="font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.3em; color: #c9bffc; text-align: center; margin: 0 0 10px;">NOT ALL HEROES WEAR CAPES</p>
+      <h1 style="font-family: 'Playfair Display', serif; font-weight: 500; font-size: 1.9rem; color: #ffffff; text-align: center; margin: 0 0 12px;">Welcome back</h1>
+      <p style="font-family: 'Playfair Display', serif; font-style: italic; font-size: 0.9rem; color: rgba(255,255,255,0.7); text-align: center; margin: 0 0 28px; line-height: 1.5;">Once upon a time, they just needed their login details to read until 3&nbsp;A.M.</p>
+
+      <?php if (!empty($error)): ?>
+        <div class="error-message"><?php echo htmlspecialchars($error); ?></div>
+      <?php endif; ?>
+
+      <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" style="display: flex; flex-direction: column; gap: 18px;">
+        <div>
+          <label style="display: block; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.06em; color: rgba(255,255,255,0.8); margin-bottom: 6px;">USERNAME</label>
+          <input type="text" name="username" placeholder="your username" required style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 0.9rem;" style-focus="outline: none; border-color: #a29bfe; background: rgba(255,255,255,0.14);">
         </div>
-    </main>
+        <div>
+          <label style="display: block; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.06em; color: rgba(255,255,255,0.8); margin-bottom: 6px;">PASSWORD</label>
+          <input type="password" name="password" placeholder="••••••••" required style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 0.9rem;" style-focus="outline: none; border-color: #a29bfe; background: rgba(255,255,255,0.14);">
+        </div>
+        <button type="submit" style="margin-top: 6px; text-align: center; text-decoration: none; font-family: 'Cinzel', serif; font-size: 0.85rem; letter-spacing: 0.04em; color: #17111f; background: linear-gradient(135deg, #a29bfe, #8a2be2); border: none; padding: 14px; border-radius: 999px; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px rgba(138,43,226,0.4);" style-hover="box-shadow: 0 10px 30px rgba(138,43,226,0.55);">ENTER THE INDEX</button>
+      </form>
 
-    <footer>
-        <p>&copy; <?php echo date('Y'); ?> - My Manhwa Collection. All rights reserved.</p>
-    </footer>
+      <p style="text-align: center; margin: 24px 0 0; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.14); font-size: 0.82rem; color: rgba(255,255,255,0.65);">Don't have an account? <a href="registration.php" style="color: #c9bffc; font-weight: 600; text-decoration: none;" style-hover="color: #fff;">Register here</a></p>
+    </div>
+  </main>
+
+  <footer style="position: relative; z-index: 3; background: rgba(14,10,23,0.9); border-top: 1px solid rgba(255,255,255,0.08); padding: 22px 32px; text-align: center;">
+    <p style="font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.05em; color: rgba(245,243,251,0.55); margin: 0;">&copy; <?php echo date('Y'); ?> &mdash; The Obscured Index. All rights reserved.</p>
+  </footer>
+</div>
+
+</x-dc>
 </body>
 </html>
