@@ -7,11 +7,11 @@ if (getenv('DATABASE_URL')) {
     $name = ltrim($url['path'], '/');
     $port = $url['port'] ?? 3306;
 } elseif (getenv('MYSQL_HOST')) {
-    $host = getenv('mysql-r32t.railway.internal');
-    $user = getenv('root');
-    $pass = getenv('FodgetTiXwPwFSbcVwoLdxXtecIblmqX');
-    $name = getenv('railway');
-    $port = getenv('3306') ?? 3306;
+    $host = getenv('MYSQL_HOST');
+    $user = getenv('MYSQL_USER');
+    $pass = getenv('MYSQL_PASSWORD');
+    $name = getenv('MYSQL_DATABASE');
+    $port = getenv('MYSQL_PORT') ?? 3306;
 } else {
     // Local development
     $host = 'localhost';
