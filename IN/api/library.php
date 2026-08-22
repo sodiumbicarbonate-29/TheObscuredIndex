@@ -2,7 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
+    header("Location: ../../login.php");
     exit();
 }
 
@@ -10,1616 +10,192 @@ require_once '../../includes/db_connect.php';
 
 $user_id = $_SESSION['user_id'];
 
-if (isset($_GET['action']) && $_GET['action'] == 'reread' && isset($_GET['id'])) {
-    $manhwa_id = (int)$_GET['id'];
-    
-    $link_query = "SELECT reading_link FROM Manhwas WHERE manhwa_id = ?";
-    $link_stmt = mysqli_prepare($conn, $link_query);
-    mysqli_stmt_bind_param($link_stmt, "i", $manhwa_id);
-    mysqli_stmt_execute($link_stmt);
-    $link_result = mysqli_stmt_get_result($link_stmt);
-    $manhwa = mysqli_fetch_assoc($link_result);
-
-    $current_date = date('Y-m-d');
-    $update_query = "UPDATE User_Reading_Status 
-                    SET reading_status = 'Currently Reading', 
-                        start_reading_date = ?, 
-                        finish_reading_date = NULL, 
-                        last_updated = NOW() 
-                    WHERE user_id = ? AND manhwa_id = ?";
-
-    $update_stmt = mysqli_prepare($conn, $update_query);
-    mysqli_stmt_bind_param($update_stmt, "sii", $current_date, $user_id, $manhwa_id);
-    mysqli_stmt_execute($update_stmt);
-    
-    $insert_reread_query = "INSERT INTO Reread_History (user_id, manhwa_id, start_date) VALUES (?, ?, ?)";
-    $insert_reread_stmt = mysqli_prepare($conn, $insert_reread_query);
-    mysqli_stmt_bind_param($insert_reread_stmt, "iis", $user_id, $manhwa_id, $current_date);
-    mysqli_stmt_execute($insert_reread_stmt);
-    
-    if (!empty($manhwa['reading_link'])) {
-        $reading_link = $manhwa['reading_link'];
-        echo "<script>
-            window.open('" . htmlspecialchars($reading_link) . "', '_blank');
-            window.location.href = 'library.php';
-        </script>";
-        exit();
-    }
-}
-
-$search = isset($_GET['search']) ? $_GET['search'] : '';
+// Get filters
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
-$sort_by = isset($_GET['sort']) ? $_GET['sort'] : 'title_asc';
-$genre_filter = isset($_GET['genre']) ? $_GET['genre'] : 'all';
 $reading_status_filter = isset($_GET['reading_status']) ? $_GET['reading_status'] : 'all';
+$genre_filter = isset($_GET['genre']) ? $_GET['genre'] : 'all';
 
-$query = "SELECT m.*, urs.reading_status, urs.start_reading_date, urs.finish_reading_date,
-          CASE WHEN m.reading_link IS NOT NULL AND m.reading_link != '' THEN 1 ELSE 0 END as has_reading_link
+// Build query
+$query = "SELECT m.*, urs.reading_status, urs.start_reading_date, urs.finish_reading_date
           FROM Manhwas m 
-          LEFT JOIN User_Reading_Status urs ON m.manhwa_id = urs.manhwa_id AND urs.user_id = $user_id 
-          WHERE m.user_id = $user_id";
+          LEFT JOIN User_Reading_Status urs ON m.manhwa_id = urs.manhwa_id AND urs.user_id = ?
+          WHERE m.user_id = ?";
+$params = [$user_id, $user_id];
+$types = "ii";
 
 if (!empty($search)) {
-    $search = mysqli_real_escape_string($conn, $search);
-    $query .= " AND (title LIKE '%$search%' OR author LIKE '%$search%')";
+    $query .= " AND (m.title LIKE ? OR m.author LIKE ?)";
+    $search_param = "%$search%";
+    $params[] = $search_param;
+    $params[] = $search_param;
+    $types .= "ss";
 }
 
 if ($status_filter != 'all') {
-    $status_filter = mysqli_real_escape_string($conn, $status_filter);
-    $query .= " AND status = '$status_filter'";
-}
-
-if ($genre_filter != 'all') {
-    $genre_filter = mysqli_real_escape_string($conn, $genre_filter);
-    $query .= " AND genre = '$genre_filter'";
+    $query .= " AND m.status = ?";
+    $params[] = $status_filter;
+    $types .= "s";
 }
 
 if ($reading_status_filter != 'all') {
-    $reading_status_filter = mysqli_real_escape_string($conn, $reading_status_filter);
-    $query .= " AND urs.reading_status = '$reading_status_filter'";
+    $query .= " AND urs.reading_status = ?";
+    $params[] = $reading_status_filter;
+    $types .= "s";
 }
 
-switch ($sort_by) {
-    case 'title_asc':
-        $query .= " ORDER BY title ASC";
-        break;
-    case 'title_desc':
-        $query .= " ORDER BY title DESC";
-        break;
-    case 'author_asc':
-        $query .= " ORDER BY author ASC";
-        break;
-    case 'author_desc':
-        $query .= " ORDER BY author DESC";
-        break;
-    case 'recent':
-        $query .= " ORDER BY upload_date DESC";
-        break;
-    default:
-        $query .= " ORDER BY title ASC";
+if ($genre_filter != 'all') {
+    $query .= " AND m.genre = ?";
+    $params[] = $genre_filter;
+    $types .= "s";
 }
 
-$result = mysqli_query($conn, $query);
+$query .= " ORDER BY m.title ASC";
 
-$total_query = "SELECT COUNT(*) as total FROM Manhwas WHERE user_id = $user_id";
-$total_result = mysqli_query($conn, $total_query);
-$total_row = mysqli_fetch_assoc($total_result);
-$total_manhwas = $total_row['total'];
+$stmt = mysqli_prepare($conn, $query);
+mysqli_stmt_bind_param($stmt, $types, ...$params);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$total = mysqli_num_rows($result);
+
+// Status colors
+function getStatusColor($status) {
+    $colors = [
+        'Currently Reading' => '#a29bfe',
+        'Done' => '#00b894',
+        'Plan to Read' => '#fdcb6e',
+        'Ongoing' => '#a29bfe',
+        'Completed' => '#00b894',
+        'Hiatus' => '#fdcb6e',
+        'Dropped' => '#fd79a8'
+    ];
+    return $colors[$status] ?? '#a29bfe';
+}
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library - My Manhwa Collection</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #6c5ce7;
-            --secondary-color: #a29bfe;
-            --text-color: #2d3436;
-            --light-color: #f5f6fa;
-            --accent-color: #fd79a8;
-            --success-color: #00b894;
-            --warning-color: #fdcb6e;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background-color: var(--light-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        main {
-            flex: 1;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
-        
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .page-header h1 {
-            color: var(--primary-color);
-            font-size: 2rem;
-        }
-        
-        .library-stats {
-            background-color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            font-size: 0.9rem;
-        }
-        
-        .library-stats strong {
-            color: var(--primary-color);
-        }
-        
-        .filters-container {
-            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(162,155,254,0.2));
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 20px rgba(108, 92, 231, 0.2), 0 0 15px rgba(253, 121, 168, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(5px);
-            position: relative;
-            overflow: hidden;
-            animation: filterGlow 3s infinite alternate;
-        }
-        
-        .filters-container::before {
-            content: "✨";
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 16px;
-            color: var(--accent-color);
-            opacity: 0.7;
-            text-shadow: 0 0 5px var(--primary-color);
-            animation: sparkleFloat 4s infinite ease-in-out;
-        }
-        
-        @keyframes filterGlow {
-            from {
-                box-shadow: 0 5px 20px rgba(108, 92, 231, 0.2), 0 0 15px rgba(253, 121, 168, 0.1);
-            }
-            to {
-                box-shadow: 0 5px 25px rgba(108, 92, 231, 0.4), 0 0 20px rgba(253, 121, 168, 0.3);
-            }
-        }
-        
-        @keyframes sparkleFloat {
-            0% { transform: translateY(0) rotate(0deg); opacity: 0.5; }
-            50% { transform: translateY(-10px) rotate(180deg); opacity: 1; }
-            100% { transform: translateY(0) rotate(360deg); opacity: 0.5; }
-        }
-        
-        .search-bar {
-            display: flex;
-            margin-bottom: 15px;
-        }
-        
-        .search-bar input {
-            flex: 1;
-            padding: 10px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px 0 0 8px;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-        
-        .search-bar input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-        
-        .search-bar button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 0 20px;
-            border-radius: 0 8px 8px 0;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .search-bar button:hover {
-            background-color: var(--secondary-color);
-        }
-        
-        .filter-options {
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .desktop-filter-row {
-            display: flex;
-            gap: 15px;
-            width: 100%;
-        }
-        
-        .add-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e0e0e0;
-        }
-        
-        .filter-group {
-            flex: 1;
-            min-width: 200px;
-            position: relative;
-        }
-        
-        .filter-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--primary-color);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            text-shadow: 0 0 5px rgba(108, 92, 231, 0.3);
-            position: relative;
-            padding-left: 18px;
-        }
-        
-        .filter-group label::before {
-            content: "✦";
-            position: absolute;
-            left: 0;
-            top: 0;
-            font-size: 14px;
-            color: var(--accent-color);
-            opacity: 0.8;
-        }
-        
-        .filter-group select {
-            width: 100%;
-            padding: 10px 15px;
-            border: 2px solid rgba(162, 155, 254, 0.3);
-            border-radius: 12px;
-            font-size: 0.95rem;
-            transition: all 0.3s;
-            background-color: rgba(255, 255, 255, 0.8);
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c5ce7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 1em;
-            box-shadow: 0 2px 8px rgba(108, 92, 231, 0.15);
-            backdrop-filter: blur(3px);
-        }
-        
-        .filter-group select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 15px rgba(108, 92, 231, 0.3), 0 0 5px rgba(253, 121, 168, 0.2);
-            background-color: rgba(255, 255, 255, 0.95);
-        }
-        
-        .filter-group select:hover {
-            border-color: var(--accent-color);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.2);
-        }
-        
-        .filter-group select option {
-            background-color: white;
-            color: var(--text-color);
-            padding: 10px;
-        }
-        
-        .active-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 15px;
-        }
-        
-        .filter-tag {
-            display: inline-flex;
-            align-items: center;
-            background-color: rgba(108, 92, 231, 0.1);
-            color: var(--primary-color);
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        
-        .filter-tag i {
-            margin-left: 5px;
-            cursor: pointer;
-        }
-        
-        .manhwa-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 15px;
-        }
-        
-        .manhwa-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .manhwa-list-item {
-            display: flex;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
-        
-        .manhwa-list-item:hover {
-            transform: translateY(-3px);
-        }
-        
-        .manhwa-list-item .manhwa-cover {
-            width: 120px;
-            height: 180px;
-            flex-shrink: 0;
-        }
-        
-        .manhwa-list-item .manhwa-info {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        
-        .manhwa-list-item .manhwa-title {
-            font-size: 1.1rem;
-            height: auto;
-        }
-        
-        .manhwa-description {
-            font-size: 0.75rem;
-            color: #666;
-            margin: 5px 0;
-            line-height: 1.4;
-        }
-        
-        .view-toggle {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .view-btn {
-            background-color: var(--light-color);
-            color: var(--text-color);
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .view-btn:hover {
-            background-color: #e0e0e0;
-        }
-        
-        .read-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .read-btn:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-2px);
-        }
-        
-        .view-btn {
-            background-color: var(--light-color);
-            color: var(--text-color);
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .view-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        .manhwa-card {
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
-        
-        .manhwa-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .manhwa-cover {
-            height: 200px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .manhwa-cover img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .manhwa-status {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: white;
-        }
-        
-        .status-label {
-            font-size: 0.7rem;
-            color: var(--text-color);
-            font-weight: 600;
-        }
-        
-        .status-Ongoing {
-            background-color: var(--primary-color);
-        }
-        
-        .status-Completed {
-            background-color: var(--success-color);
-        }
-        
-        .status-Dropped {
-            background-color: var(--accent-color);
-        }
-        
-        .status-Hiatus {
-            background-color: var(--warning-color);
-        }
-        
-        .reread-badge {
-            background-color: var(--accent-color);
-            color: white;
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 10px;
-            display: inline-block;
-            margin-left: 5px;
-            position: absolute;
-            top: 10px;
-            left: 10px;
-        }
-        
-        .manhwa-info {
-            padding: 10px;
-        }
-        
-        .manhwa-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 3px;
-            color: var(--text-color);
-            overflow: visible;
-            min-height: 2.2em;
-            word-wrap: break-word;
-        }
-        
-        .manhwa-author {
-            font-size: 0.8rem;
-            color: #666;
-            margin-bottom: 3px;
-        }
-        
-        .manhwa-genre {
-            font-size: 0.75rem;
-            color: var(--accent-color);
-            margin-bottom: 5px;
-            font-style: italic;
-        }
-        
-        .genre-dates-container {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .reading-status-select {
-            padding: 6px 10px;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            background-color: white;
-            color: var(--text-color);
-            cursor: pointer;
-            transition: all 0.2s;
-            width: 100%;
-            margin: 5px 0;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c5ce7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 8px center;
-            background-size: 0.8em;
-        }
-        
-        .reading-status-select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
-        }
-        
-        .reading-status-select option {
-            padding: 10px;
-        }
-        
-        .reading-dates {
-            font-size: 0.7rem;
-            color: #666;
-            margin-top: 5px;
-            background-color: rgba(108, 92, 231, 0.05);
-            border-radius: 4px;
-            padding: 5px 8px;
-        }
-        
-        .reading-dates.list-inline {
-            display: inline-flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 0;
-            background: none;
-            padding: 0;
-            font-size: 0.7rem;
-            line-height: 1.4;
-        }
-        
-        .genre-dates-container {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-        
-        .manhwa-genre {
-            margin-bottom: 0;
-            line-height: 1.5;
-            position: relative;
-            top: 3px;
-        }
-        
-        .reading-dates span {
-            display: block;
-            margin-bottom: 4px;
-            position: relative;
-            padding-left: 18px;
-        }
-        
-        .reading-dates.list-inline span {
-            padding-left: 18px;
-            margin-bottom: 0;
-            display: inline-flex;
-            align-items: center;
-        }
-        
-        .reading-dates span:before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            opacity: 0.7;
-        }
-        
-        .reading-dates span:last-child:before {
-            background-color: var(--success-color);
-        }
-        
-        .manhwa-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-        }
-        
-        .manhwa-actions {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .manhwa-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 5px;
-        }
-        
-        .manhwa-actions a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-size: 0.75rem;
-            font-weight: 600;
-            transition: all 0.3s;
-            position: relative;
-        }
-        
-        .manhwa-actions a[href*="view_manhwa.php"] {
-            color: var(--primary-color);
-            position: relative;
-            display: inline-block;
-        }
-        
-        .manhwa-actions a[href*="view_manhwa.php"]::before {
-            content: '✧';
-            position: absolute;
-            left: -12px;
-            opacity: 0;
-            transition: all 0.3s ease;
-            color: var(--accent-color);
-        }
-        
-        .manhwa-actions a[href*="view_manhwa.php"]::after {
-            content: '✧';
-            position: absolute;
-            right: -12px;
-            opacity: 0;
-            transition: all 0.3s ease;
-            color: var(--accent-color);
-        }
-        
-        .manhwa-actions a[href*="view_manhwa.php"]:hover {
-            color: var(--accent-color);
-            letter-spacing: 0.5px;
-        }
-        
-        .manhwa-actions a[href*="view_manhwa.php"]:hover::before,
-        .manhwa-actions a[href*="view_manhwa.php"]:hover::after {
-            opacity: 1;
-        }
-        
-        .read-btn {
-            background-color: var(--success-color);
-            color: white !important;
-            padding: 3px 8px;
-            border-radius: 4px;
-        }
-        
-        .manhwa-actions a:hover {
-            text-decoration: underline;
-        }
-        
-        .read-btn {
-            background-color: var(--success-color);
-            color: white !important;
-            padding: 5px 10px;
-            border-radius: 4px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s;
-        }
-        
-        .read-btn:hover {
-            background-color: #00a382;
-            transform: translateY(-2px);
-            text-decoration: none !important;
-        }
-        
-        .reread-btn {
-            background-color: var(--accent-color);
-            color: white !important;
-            padding: 5px 10px;
-            border-radius: 4px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            transition: all 0.2s;
-            margin-left: 5px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            min-width: 60px;
-        }
-
-        @media (max-width: 768px) {
-            .reread-btn {
-                padding: 5px 10px;
-                font-size: 0.75rem;
-                min-width: 60px;
-                background: linear-gradient(135deg, #fd79a8, #e84393);
-                box-shadow: 0 2px 8px rgba(253, 121, 168, 0.4);
-            }
-            
-            .reread-btn:hover::after {
-                animation: sparkle 1.5s infinite ease-in-out;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .reread-btn {
-                padding: 4px 8px;
-                font-size: 0.7rem;
-                min-width: 50px;
-                background: linear-gradient(135deg, #fd79a8, #e84393);
-                box-shadow: 0 2px 6px rgba(253, 121, 168, 0.4);
-            }
-            
-            .reread-btn::after {
-                font-size: 10px;
-                top: -8px;
-                right: -3px;
-            }
-            
-            .reread-btn:active {
-                transform: scale(0.95);
-                box-shadow: 0 2px 4px rgba(253, 121, 168, 0.3);
-            }
-        }
-  
-        .reread-btn:hover {
-            background-color: #e84393;
-            transform: translateY(-2px);
-            text-decoration: none !important;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 50px 20px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .empty-state i {
-            font-size: 3rem;
-            color: var(--secondary-color);
-            margin-bottom: 15px;
-        }
-        
-        .empty-state h3 {
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-        
-        .empty-state p {
-            color: #666;
-            margin-bottom: 20px;
-        }
-        
-        .add-btn {
-            display: inline-block;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .add-btn:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-2px);
-        }
-        
-        
-        @media (max-width: 768px) {
-            main {
-                padding: 10px;
-            }
-            
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-            
-            .library-stats {
-                font-size: 0.8rem;
-                padding: 8px 12px;
-                align-self: flex-start;
-            }
-            
-            .filter-options {
-                flex-direction: column;
-            }
-            
-            .desktop-filter-row {
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .mobile-filter-row {
-                display: flex;
-                gap: 8px;
-                margin-bottom: 8px;
-            }
-            
-            .filter-group {
-                min-width: 0;
-                flex: 1;
-            }
-            
-            .filter-group label {
-                font-size: 0.7rem;
-                margin-bottom: 3px;
-            }
-            
-            .filter-group select {
-                padding: 6px 8px;
-                font-size: 0.75rem;
-                background-position: right 5px center;
-                background-size: 0.8em;
-            }
-            
-            .manhwa-grid {
-                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-                gap: 10px;
-            }
-            
-            .manhwa-cover {
-                height: 160px;
-            }
-            
-            .manhwa-status {
-                padding: 3px 6px;
-                font-size: 0.65rem;
-                top: 5px;
-                right: 5px;
-            }
-            
-            .filters-container {
-                padding: 10px;
-                margin-bottom: 15px;
-            }
-            
-            .view-toggle {
-                flex: 1;
-            }
-            
-            .add-btn {
-                padding: 6px 10px;
-                font-size: 0.8rem;
-            }
-            
-            .manhwa-title {
-                font-size: 0.8rem;
-                min-height: 1.8em;
-            }
-            
-            .manhwa-info-row {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: 5px;
-                flex-wrap: nowrap;
-            }
-            
-            .manhwa-author, .manhwa-genre {
-                font-size: 0.65rem;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                max-width: 50%;
-            }
-            
-            .reading-status-select {
-                font-size: 0.65rem;
-                padding: 3px 15px 3px 5px;
-                height: 24px;
-                background-position: right 3px center;
-                background-size: 0.7em;
-                margin: 3px 0;
-            }
-            
-            .reading-dates {
-                font-size: 0.65rem;
-                padding: 4px 6px;
-            }
-            
-            .manhwa-actions a {
-                font-size: 0.7rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            main {
-                padding: 10px;
-            }
-            
-            .page-header h1 {
-                font-size: 1.5rem;
-            }
-            
-            .library-stats {
-                font-size: 0.8rem;
-                padding: 8px 12px;
-            }
-            
-            .filters-container {
-                padding: 10px;
-                margin-bottom: 15px;
-            }
-            
-            .search-bar input {
-                padding: 8px 10px;
-                font-size: 0.9rem;
-            }
-            
-            .desktop-filter-row {
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .filter-group {
-                min-width: 0;
-                flex: 1;
-            }
-            
-            .filter-group label {
-                font-size: 0.7rem;
-                margin-bottom: 3px;
-            }
-            
-            .filter-group select {
-                padding: 6px 8px;
-                font-size: 0.75rem;
-                background-position: right 5px center;
-                background-size: 0.8em;
-            }
-            
-            /* Mobile filter row styles */
-            .mobile-filter-row .filter-group select {
-                padding-right: 18px;
-            }
-            
-            .manhwa-grid {
-                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-                gap: 10px;
-            }
-            
-            .manhwa-cover {
-                height: 160px;
-            }
-            
-            .manhwa-status {
-                padding: 3px 6px;
-                font-size: 0.65rem;
-                top: 5px;
-                right: 5px;
-            }
-            
-            .manhwa-title {
-                font-size: 0.8rem;
-                min-height: 1.8em;
-            }
-            
-            /* Mobile inline status layout */
-            .manhwa-info {
-                position: relative;
-            }
-            
-            .manhwa-info-row {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: 5px;
-                flex-wrap: nowrap;
-            }
-            
-            .manhwa-author, .manhwa-genre {
-                font-size: 0.65rem;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                max-width: 50%;
-            }
-            
-            .reading-status-select {
-                font-size: 0.65rem;
-                padding: 3px 15px 3px 5px;
-                height: 24px;
-                background-position: right 3px center;
-                background-size: 0.7em;
-                margin: 3px 0;
-            }
-            
-            .reading-dates {
-                font-size: 0.65rem;
-                padding: 4px 6px;
-            }
-            
-            .manhwa-actions a {
-                font-size: 0.7rem;
-            }
-            
-            .view-btn {
-                padding: 6px 10px;
-                font-size: 0.8rem;
-            }
-            
-            .add-btn {
-                padding: 6px 10px;
-                font-size: 0.8rem;
-            }
-            
-            /* List view adjustments */
-            .manhwa-list-item .manhwa-cover {
-                width: 80px;
-                height: 120px;
-            }
-            
-            .manhwa-list-item .manhwa-info {
-                padding: 8px;
-            }
-            
-            .manhwa-list-item .manhwa-title {
-                font-size: 0.9rem;
-            }
-            
-            .manhwa-description {
-                font-size: 0.7rem;
-            }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Library - The Obscured Index</title>
+<link rel="icon" type="image/png" href="../../images/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+<style>
+body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+.container { min-height: 100vh; display: flex; flex-direction: column; background: #0e0a17; }
+header { position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; min-height: 72px; padding: 12px 24px; background: rgba(14, 10, 23, 0.85); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08); }
+header a.logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+header a.logo img { height: 40px; width: 40px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(162,155,254,0.35)); }
+header a.logo span { font-family: 'Cinzel', serif; font-weight: 600; font-size: 1.05rem; color: #f5f3fb; letter-spacing: 0.02em; }
+nav { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+nav a { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.04em; color: rgba(245,243,251,0.75); text-decoration: none; }
+nav a:hover, nav a.active { color: #ffffff; }
+nav a.btn { font-size: 0.75rem; color: #0e0a17; background: linear-gradient(135deg, #a29bfe, #8a2be2); padding: 9px 16px; border-radius: 999px; font-weight: 600; }
+main { flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; padding: 36px 24px 60px; }
+h1 { font-family: 'Playfair Display', serif; font-weight: 500; color: #ffffff; font-size: 1.9rem; margin: 0 0 6px; }
+.subtitle { color: rgba(255,255,255,0.55); margin: 0 0 26px; font-size: 0.95rem; }
+.filters { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+.filters input, .filters select { flex: 1; min-width: 150px; box-sizing: border-box; padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #fff; font-size: 0.9rem; }
+.filters input:focus, .filters select:focus { outline: none; border-color: #a29bfe; }
+.filters select option { background: #0e0a17; color: #fff; }
+.status-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 30px; }
+.status-filters a { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.04em; padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.18); text-decoration: none; white-space: nowrap; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.75); }
+.status-filters a.active { background: linear-gradient(135deg, #a29bfe, #8a2be2); color: #17111f; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; }
+.card { text-decoration: none; display: block; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; transition: transform 0.2s; }
+.card:hover { transform: translateY(-4px); }
+.card .cover { position: relative; height: 200px; background: #241f30; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.card .cover img { width: 100%; height: 100%; object-fit: cover; }
+.card .cover .status-badge { position: absolute; top: 10px; right: 10px; font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.03em; padding: 4px 10px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+.card .info { padding: 14px; }
+.card h3 { margin: 0 0 4px; font-size: 0.9rem; color: #f5f3fb; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .genre { margin: 0 0 8px; font-size: 0.75rem; color: #c9bffc; font-style: italic; }
+.card .reading-status { font-size: 0.7rem; color: rgba(255,255,255,0.6); }
+.empty { text-align: center; padding: 60px 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; }
+.empty p { font-family: 'Playfair Display', serif; font-style: italic; color: rgba(255,255,255,0.6); font-size: 1.1rem; margin: 0; }
+footer { background: rgba(14,10,23,0.95); border-top: 1px solid rgba(255,255,255,0.08); padding: 20px 32px; text-align: center; }
+footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.05em; color: rgba(245,243,251,0.5); margin: 0; }
+@media (max-width: 768px) {
+  .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .card .cover { height: 180px; }
+}
+</style>
 </head>
 <body>
-    <?php include '../../includes/navbarIN.php'; ?>
+<div class="container">
+  <header>
+    <a href="home.php" class="logo">
+      <img src="../../images/logo3.png" alt="Logo">
+      <span>The Obscured Index</span>
+    </a>
+    <nav>
+      <a href="home.php">HOME</a>
+      <a href="library.php" class="active">LIBRARY</a>
+      <a href="add_manhwa.php" class="btn">+ ADD NEW</a>
+      <a href="../../logout.php">LOGOUT</a>
+    </nav>
+  </header>
 
-    <main>
-        <div class="page-header">
-            <h1>My Manhwa Library</h1>
-            <div class="library-stats">
-                <strong><?php echo $total_manhwas; ?></strong> manhwas in your collection
-            </div>
+  <main>
+    <h1>Your Library</h1>
+    <p class="subtitle"><?php echo $total; ?> titles obscured in these halls.</p>
+
+    <form method="GET" class="filters">
+      <input type="text" name="search" placeholder="Search by title or author..." value="<?php echo htmlspecialchars($search); ?>">
+      <select name="genre" onchange="this.form.submit()">
+        <option value="all">All Genres</option>
+        <option value="BL" <?php echo $genre_filter == 'BL' ? 'selected' : ''; ?>>BL</option>
+        <option value="Straight" <?php echo $genre_filter == 'Straight' ? 'selected' : ''; ?>>Straight</option>
+        <option value="No Romance" <?php echo $genre_filter == 'No Romance' ? 'selected' : ''; ?>>No Romance</option>
+      </select>
+      <select name="status" onchange="this.form.submit()">
+        <option value="all">All Status</option>
+        <option value="Ongoing" <?php echo $status_filter == 'Ongoing' ? 'selected' : ''; ?>>Ongoing</option>
+        <option value="Completed" <?php echo $status_filter == 'Completed' ? 'selected' : ''; ?>>Completed</option>
+        <option value="Hiatus" <?php echo $status_filter == 'Hiatus' ? 'selected' : ''; ?>>Hiatus</option>
+        <option value="Dropped" <?php echo $status_filter == 'Dropped' ? 'selected' : ''; ?>>Dropped</option>
+      </select>
+      <button type="submit" style="padding: 12px 20px; border-radius: 8px; border: none; background: linear-gradient(135deg, #a29bfe, #8a2be2); color: #17111f; font-weight: 600; cursor: pointer;">Search</button>
+    </form>
+
+    <div class="status-filters">
+      <a href="?<?php echo http_build_query(array_merge($_GET, ['reading_status' => 'all'])); ?>" class="<?php echo $reading_status_filter == 'all' ? 'active' : ''; ?>">All</a>
+      <a href="?<?php echo http_build_query(array_merge($_GET, ['reading_status' => 'Currently Reading'])); ?>" class="<?php echo $reading_status_filter == 'Currently Reading' ? 'active' : ''; ?>">Currently Reading</a>
+      <a href="?<?php echo http_build_query(array_merge($_GET, ['reading_status' => 'Done'])); ?>" class="<?php echo $reading_status_filter == 'Done' ? 'active' : ''; ?>">Completed</a>
+      <a href="?<?php echo http_build_query(array_merge($_GET, ['reading_status' => 'Plan to Read'])); ?>" class="<?php echo $reading_status_filter == 'Plan to Read' ? 'active' : ''; ?>">Plan to Read</a>
+    </div>
+
+    <?php if ($total > 0): ?>
+    <div class="grid">
+      <?php while ($m = mysqli_fetch_assoc($result)): ?>
+      <a href="view_manhwa.php?id=<?php echo $m['manhwa_id']; ?>" class="card">
+        <div class="cover">
+          <?php if (!empty($m['cover_image'])): ?>
+          <img src="../../<?php echo htmlspecialchars($m['cover_image']); ?>" alt="">
+          <?php endif; ?>
+          <span class="status-badge" style="background: <?php echo getStatusColor($m['status']); ?>; color: #17111f;"><?php echo htmlspecialchars($m['status']); ?></span>
         </div>
-        
-        <div class="filters-container">
-            <form action="" method="GET">
-                <div class="search-bar">
-                    <input type="text" name="search" id="search-input" placeholder="Search by title or author..." value="<?php echo htmlspecialchars($search); ?>">
-                    <button type="button" id="search-button"><i class="fas fa-search"></i></button>
-                </div>
-                <div id="search-results"></div>
-                
-                <div class="filter-options">
-                    <div class="desktop-filter-row">
-                        <div class="filter-group">
-                            <label for="status">Status</label>
-                            <select name="status" id="status" onchange="this.form.submit()">
-                                <option value="all" <?php echo $status_filter == 'all' ? 'selected' : ''; ?>>All Statuses</option>
-                                <option value="Ongoing" <?php echo $status_filter == 'Ongoing' ? 'selected' : ''; ?>>Ongoing</option>
-                                <option value="Completed" <?php echo $status_filter == 'Completed' ? 'selected' : ''; ?>>Completed</option>
-                                <option value="Hiatus" <?php echo $status_filter == 'Hiatus' ? 'selected' : ''; ?>>Hiatus</option>
-                                <option value="Dropped" <?php echo $status_filter == 'Dropped' ? 'selected' : ''; ?>>Dropped</option>
-                            </select>
-                        </div>
-                        
-                        <div class="filter-group">
-                            <label for="genre">Genre</label>
-                            <select name="genre" id="genre" onchange="this.form.submit()">
-                                <option value="all" <?php echo $genre_filter == 'all' ? 'selected' : ''; ?>>All Genres</option>
-                                <option value="BL" <?php echo $genre_filter == 'BL' ? 'selected' : ''; ?>>BL</option>
-                                <option value="Straight" <?php echo $genre_filter == 'Straight' ? 'selected' : ''; ?>>Straight</option>
-                                <option value="No Romance" <?php echo $genre_filter == 'No Romance' ? 'selected' : ''; ?>>No Romance</option>
-                            </select>
-                        </div>
-                        
-                        <div class="filter-group">
-                            <label for="reading_status">Reading Status</label>
-                            <select name="reading_status" id="reading_status" onchange="this.form.submit()">
-                                <option value="all" <?php echo $reading_status_filter == 'all' ? 'selected' : ''; ?>>All Reading Statuses</option>
-                                <option value="Plan to Read" <?php echo $reading_status_filter == 'Plan to Read' ? 'selected' : ''; ?>>Plan to Read</option>
-                                <option value="Currently Reading" <?php echo $reading_status_filter == 'Currently Reading' ? 'selected' : ''; ?>>Currently Reading</option>
-                                <option value="Done" <?php echo $reading_status_filter == 'Done' ? 'selected' : ''; ?>>Done</option>
-                                <option value="Reread" <?php echo $reading_status_filter == 'Reread' ? 'selected' : ''; ?>>Reread</option>
-                            </select>
-                        </div>
-                        
-                        <div class="filter-group">
-                            <label for="sort">Sort By</label>
-                            <select name="sort" id="sort" onchange="this.form.submit()">
-                                <option value="title_asc" <?php echo $sort_by == 'title_asc' ? 'selected' : ''; ?>>Title (A-Z)</option>
-                                <option value="title_desc" <?php echo $sort_by == 'title_desc' ? 'selected' : ''; ?>>Title (Z-A)</option>
-                                <option value="author_asc" <?php echo $sort_by == 'author_asc' ? 'selected' : ''; ?>>Author (A-Z)</option>
-                                <option value="author_desc" <?php echo $sort_by == 'author_desc' ? 'selected' : ''; ?>>Author (Z-A)</option>
-                                <option value="recent" <?php echo $sort_by == 'recent' ? 'selected' : ''; ?>>Recently Added</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </form>
+        <div class="info">
+          <h3><?php echo htmlspecialchars($m['title']); ?></h3>
+          <p class="genre"><?php echo htmlspecialchars($m['genre'] ?: 'No genre'); ?></p>
+          <?php if (!empty($m['reading_status'])): ?>
+          <p class="reading-status"><?php echo htmlspecialchars($m['reading_status']); ?></p>
+          <?php endif; ?>
         </div>
-        
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <div class="view-toggle">
-                <button type="button" class="view-btn active" data-view="grid"><i class="fas fa-th"></i> Grid</button>
-                <button type="button" class="view-btn" data-view="list"><i class="fas fa-list"></i> List</button>
-            </div>
-            <a href="add_manhwa.php" class="add-btn"><i class="fas fa-plus"></i> Add Manhwa</a>
-        </div>
-        
-        <?php if (mysqli_num_rows($result) > 0): ?>
-            <div class="manhwa-grid active-view">
-                <?php 
-                mysqli_data_seek($result, 0);
-                while ($manhwa = mysqli_fetch_assoc($result)): 
-                ?>
-                        <div class="manhwa-card" data-has-link="<?php echo $manhwa['has_reading_link']; ?>" data-manhwa-id="<?php echo $manhwa['manhwa_id']; ?>">
-                        <div class="manhwa-cover">
-                            <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
-                            <span class="manhwa-status status-<?php echo htmlspecialchars($manhwa['status']); ?>"><?php echo htmlspecialchars($manhwa['status']); ?></span>
-                        </div>
-                        <div class="manhwa-info">
-                            <h3 class="manhwa-title"><?php echo htmlspecialchars($manhwa['title']); ?></h3>
-                            <div class="manhwa-info-row">
-                                <p class="manhwa-author"><?php echo !empty($manhwa['author']) ? htmlspecialchars($manhwa['author']) : 'Unknown Author'; ?></p>
-                                <p class="manhwa-genre"><?php echo !empty($manhwa['genre']) ? htmlspecialchars($manhwa['genre']) : 'No genre'; ?></p>
-                            </div>
-                            <div class="manhwa-info-row">
-                                <select class="reading-status-select" data-manhwa-id="<?php echo $manhwa['manhwa_id']; ?>">
-                                    <option value="">Reading Status</option>
-                                    <option value="Plan to Read" <?php echo $manhwa['reading_status'] == 'Plan to Read' ? 'selected' : ''; ?>>Plan to Read</option>
-                                    <option value="Currently Reading" <?php echo $manhwa['reading_status'] == 'Currently Reading' ? 'selected' : ''; ?>>Currently Reading</option>
-                                    <option value="Done" <?php echo $manhwa['reading_status'] == 'Done' ? 'selected' : ''; ?>>Done</option>
-                                    <option value="Reread" <?php echo $manhwa['reading_status'] == 'Reread' ? 'selected' : ''; ?>>Reread</option>
-                                </select>
-                            </div>
-                            <?php if (!empty($manhwa['start_reading_date']) || !empty($manhwa['finish_reading_date'])): ?>
-                            <div class="reading-dates">
-                                <?php if (!empty($manhwa['start_reading_date'])): ?>
-                                <span>Started: <?php echo date('M d, Y', strtotime($manhwa['start_reading_date'])); ?></span>
-                                <?php endif; ?>
-                                <?php if (!empty($manhwa['finish_reading_date'])): ?>
-                                <span>Finished: <?php echo date('M d, Y', strtotime($manhwa['finish_reading_date'])); ?></span>
-                                <?php endif; ?>
-                            </div>
-                            <?php endif; ?>
-                            <div class="manhwa-actions">
-                                <a href="view_manhwa.php?id=<?php echo $manhwa['manhwa_id']; ?>">View Details</a>
-                                <?php if ($manhwa['reading_status'] == 'Done' && $manhwa['has_reading_link']): ?>
-                                <a href="library.php?action=reread&id=<?php echo $manhwa['manhwa_id']; ?>" class="reread-btn">Reread</a>
-                                <?php endif; ?>
-                            </div>
+      </a>
+      <?php endwhile; ?>
+    </div>
+    <?php else: ?>
+    <div class="empty">
+      <p>Nothing obscured enough to match that search.</p>
+    </div>
+    <?php endif; ?>
+  </main>
 
-                        </div>
-                    </div>
-                <?php endwhile; ?>
-            </div>
-            
-            <div class="manhwa-list" style="display: none;">
-                <?php 
-                mysqli_data_seek($result, 0);
-                while ($manhwa = mysqli_fetch_assoc($result)): 
-                ?>
-                    <div class="manhwa-list-item" data-has-link="<?php echo $manhwa['has_reading_link']; ?>" data-manhwa-id="<?php echo $manhwa['manhwa_id']; ?>">
-
-                        <div class="manhwa-cover">
-                            <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
-                            <span class="manhwa-status status-<?php echo htmlspecialchars($manhwa['status']); ?>"><?php echo htmlspecialchars($manhwa['status']); ?></span>
-                        </div>
-                        <div class="manhwa-info">
-                            <div>
-                                <h3 class="manhwa-title"><?php echo htmlspecialchars($manhwa['title']); ?></h3>
-                                <p class="manhwa-author"><?php echo !empty($manhwa['author']) ? htmlspecialchars($manhwa['author']) : 'Unknown Author'; ?></p>
-                                <div class="genre-dates-container">
-                                    <p class="manhwa-genre">
-                                        <?php echo !empty($manhwa['genre']) ? htmlspecialchars($manhwa['genre']) : 'No genre'; ?>
-                                    </p>
-                                    <?php if (!empty($manhwa['start_reading_date']) || !empty($manhwa['finish_reading_date'])): ?>
-                                    <div class="reading-dates list-inline">
-                                        <?php if (!empty($manhwa['start_reading_date'])): ?>
-                                        <span>Started: <?php echo date('M d', strtotime($manhwa['start_reading_date'])); ?></span>
-                                        <?php endif; ?>
-                                        <?php if (!empty($manhwa['finish_reading_date'])): ?>
-                                        <span>Finished: <?php echo date('M d', strtotime($manhwa['finish_reading_date'])); ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                    <?php endif; ?>
-                                </div>
-                                <p class="manhwa-description"><?php echo substr(htmlspecialchars($manhwa['description']), 0, 100) . (strlen($manhwa['description']) > 100 ? '...' : ''); ?></p>
-                                <select class="reading-status-select" data-manhwa-id="<?php echo $manhwa['manhwa_id']; ?>">
-                                    <option value="">Reading Status</option>
-                                    <option value="Plan to Read" <?php echo $manhwa['reading_status'] == 'Plan to Read' ? 'selected' : ''; ?>>Plan to Read</option>
-                                    <option value="Currently Reading" <?php echo $manhwa['reading_status'] == 'Currently Reading' ? 'selected' : ''; ?>>Currently Reading</option>
-                                    <option value="Done" <?php echo $manhwa['reading_status'] == 'Done' ? 'selected' : ''; ?>>Done</option>
-                                    <option value="Reread" <?php echo $manhwa['reading_status'] == 'Reread' ? 'selected' : ''; ?>>Reread</option>
-                                </select>
-                            </div>
-                            <div class="manhwa-actions">
-                                <a href="view_manhwa.php?id=<?php echo $manhwa['manhwa_id']; ?>">View Details</a>
-                                <?php if ($manhwa['reading_status'] == 'Done' && $manhwa['has_reading_link']): ?>
-                                <a href="library.php?action=reread&id=<?php echo $manhwa['manhwa_id']; ?>" class="reread-btn"><i class="fas fa-redo"></i> Reread</a>
-                                <?php endif; ?>
-                            </div>
-
-                        </div>
-                    </div>
-                <?php endwhile; ?>
-            </div>
-        <?php else: ?>
-            <div class="empty-state">
-                <i class="fas fa-books"></i>
-                <h3>Your library is empty</h3>
-                <p>Start adding manhwas to your collection!</p>
-                <a href="add_manhwa.php" class="add-btn">Add Manhwa</a>
-            </div>
-        <?php endif; ?>
-    </main>
-
-   <?php 
-    $root_path = '../../';
-    include '../../includes/footer.php'; 
-    ?>
-
-    <style>
-        .reread-btn {
-            background: linear-gradient(135deg, #fd79a8, #e84393);
-            color: white !important;
-            padding: 5px 10px;
-            border-radius: 20px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            transition: all 0.3s;
-            margin-left: 5px;
-            font-weight: 600;
-            box-shadow: 0 3px 10px rgba(253, 121, 168, 0.3);
-            position: relative;
-            overflow: hidden;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .reread-btn::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
-            opacity: 0;
-            transition: opacity 0.5s;
-        }
-        
-        .reread-btn:hover {
-            background: linear-gradient(135deg, #e84393, #fd79a8);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(253, 121, 168, 0.5), 0 0 20px rgba(232, 67, 147, 0.3);
-            text-decoration: none !important;
-        }
-        
-        .reread-btn:hover::before {
-            opacity: 1;
-            animation: shine 1.5s infinite;
-        }
-        
-        .reread-btn::after {
-            content: '✨';
-            position: absolute;
-            top: -10px;
-            right: -5px;
-            font-size: 12px;
-            color: white;
-            text-shadow: 0 0 5px #fd79a8;
-            opacity: 0;
-            transition: all 0.3s;
-        }
-        
-        .reread-btn:hover::after {
-            opacity: 1;
-            animation: sparkle 2s infinite ease-in-out;
-        }
-        
-        @keyframes sparkle {
-            0% { transform: translate(0, 0) rotate(0deg); opacity: 0.5; }
-            50% { transform: translate(-5px, -10px) rotate(180deg); opacity: 1; }
-            100% { transform: translate(0, 0) rotate(360deg); opacity: 0.5; }
-        }
-    </style>
-    
-    <script>
-        function debounce(func, wait) {
-            let timeout;
-            return function() {
-                const context = this;
-                const args = arguments;
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    func.apply(context, args);
-                }, wait);
-            };
-        }
-        
-        function fetchResults(searchValue) {
-            const statusFilter = document.getElementById('status').value;
-            const genreFilter = document.getElementById('genre').value;
-            const readingStatusFilter = document.getElementById('reading_status').value;
-            const sortBy = document.getElementById('sort').value;
-            
-            const url = `?search=${encodeURIComponent(searchValue)}&status=${encodeURIComponent(statusFilter)}&genre=${encodeURIComponent(genreFilter)}&reading_status=${encodeURIComponent(readingStatusFilter)}&sort=${encodeURIComponent(sortBy)}`;
-            
-            window.history.pushState({}, '', url);
-            
-            const gridView = document.querySelector('.manhwa-grid');
-            if (gridView) {
-                gridView.style.opacity = '0.6';
-            }
-            
-            fetch(url)
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    
-                    const newGrid = doc.querySelector('.manhwa-grid');
-                    if (newGrid && document.querySelector('.manhwa-grid')) {
-                        document.querySelector('.manhwa-grid').innerHTML = newGrid.innerHTML;
-                        document.querySelector('.manhwa-grid').style.opacity = '1';
-                    }
-                    
-                    const newList = doc.querySelector('.manhwa-list');
-                    if (newList && document.querySelector('.manhwa-list')) {
-                        document.querySelector('.manhwa-list').innerHTML = newList.innerHTML;
-                    }
-                    
-                    const emptyState = doc.querySelector('.empty-state');
-                    if (emptyState) {
-                        if (document.querySelector('.manhwa-grid')) {
-                            document.querySelector('.manhwa-grid').style.display = 'none';
-                        }
-                        if (document.querySelector('.manhwa-list')) {
-                            document.querySelector('.manhwa-list').style.display = 'none';
-                        }
-                        
-                        if (!document.querySelector('.empty-state')) {
-                            const container = document.querySelector('.manhwa-grid').parentNode;
-                            const emptyDiv = document.createElement('div');
-                            emptyDiv.className = 'empty-state';
-                            container.appendChild(emptyDiv);
-                        }
-                        
-                        document.querySelector('.empty-state').innerHTML = emptyState.innerHTML;
-                        document.querySelector('.empty-state').style.display = 'block';
-                    } else {
-                        if (document.querySelector('.empty-state')) {
-                            document.querySelector('.empty-state').style.display = 'none';
-                        }
-                    }
-                    
-                    initializeEventListeners();
-                    addRereadButtons();
-                })
-                .catch(error => {
-                    console.error('Error fetching results:', error);
-                    if (document.querySelector('.manhwa-grid')) {
-                        document.querySelector('.manhwa-grid').style.opacity = '1';
-                    }
-                });
-        }
-        
-        const searchInput = document.getElementById('search-input');
-        if (searchInput) {
-            searchInput.addEventListener('input', debounce(function() {
-                fetchResults(this.value);
-            }, 300)); 
-        }
-        
-        function initializeEventListeners() {
-            document.querySelectorAll('.reading-status-select').forEach(select => {
-                select.addEventListener('change', handleReadingStatusChange);
-            });
-        }
-        
-        document.querySelectorAll('select:not(.reading-status-select)').forEach(select => {
-            select.addEventListener('change', function() {
-                const searchValue = document.getElementById('search-input').value;
-                fetchResults(searchValue);
-            });
-        });
-        
-        function handleReadingStatusChange() {
-            const manhwaId = this.getAttribute('data-manhwa-id');
-            const readingStatus = this.value;
-            
-            if (manhwaId && readingStatus) {
-                this.style.opacity = '0.7';
-                
-                const formData = new FormData();
-                formData.append('manhwa_id', manhwaId);
-                formData.append('reading_status', readingStatus);
-                
-                fetch('update_reading_status.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    this.style.opacity = '1';
-                    
-                    if (data.success) {
-                        
-                        addRereadButtons();
-                    } else {
-                        console.error('Error updating reading status:', data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    this.style.opacity = '1';
-                });
-            }
-        }
-
-        document.querySelectorAll('.reading-status-select').forEach(select => {
-            select.addEventListener('change', handleReadingStatusChange);
-        });
-        
-        document.querySelectorAll('.view-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const view = this.getAttribute('data-view');
-                
-                document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                if (view === 'grid') {
-                    document.querySelector('.manhwa-grid').style.display = 'grid';
-                    document.querySelector('.manhwa-list').style.display = 'none';
-                } else {
-                    document.querySelector('.manhwa-grid').style.display = 'none';
-                    document.querySelector('.manhwa-list').style.display = 'flex';
-                }
-                
-                localStorage.setItem('manhwa-view', view);
-            });
-        });
-        
-        const savedView = localStorage.getItem('manhwa-view');
-        if (savedView) {
-            document.querySelector(`.view-btn[data-view="${savedView}"]`).click();
-        }
-        
-        function addRereadButtons() {
-            const manhwasWithLinks = [];
-            
-            document.querySelectorAll('[data-has-link="1"]').forEach(el => {
-                const id = el.getAttribute('data-manhwa-id');
-                if (id) manhwasWithLinks.push(id);
-            });
-            
-            document.querySelectorAll('.manhwa-grid .manhwa-card').forEach(card => {
-                const select = card.querySelector('.reading-status-select');
-                const manhwaId = select.getAttribute('data-manhwa-id');
-                const readingStatus = select.value;
-                const actions = card.querySelector('.manhwa-actions');
-                const hasLink = manhwasWithLinks.includes(manhwaId);
-                
-                if (readingStatus === 'Done' && hasLink) {
-                    if (!actions.querySelector('.reread-btn')) {
-                        const rereadBtn = document.createElement('a');
-                        rereadBtn.href = `library.php?action=reread&id=${manhwaId}`;
-                        rereadBtn.className = 'reread-btn';
-                        rereadBtn.textContent = 'Reread';
-                        actions.appendChild(rereadBtn);
-                    }
-                } else {
-                    const existingBtn = actions.querySelector('.reread-btn');
-                    if (existingBtn) {
-                        existingBtn.remove();
-                    }
-                }
-            });
-            
-            document.querySelectorAll('.manhwa-list .manhwa-list-item').forEach(item => {
-                const select = item.querySelector('.reading-status-select');
-                const manhwaId = select.getAttribute('data-manhwa-id');
-                const readingStatus = select.value;
-                const actions = item.querySelector('.manhwa-actions');
-                const hasLink = manhwasWithLinks.includes(manhwaId);
-                
-                if (readingStatus === 'Done' && hasLink) {
-                    if (!actions.querySelector('.reread-btn')) {
-                        const rereadBtn = document.createElement('a');
-                        rereadBtn.href = `library.php?action=reread&id=${manhwaId}`;
-                        rereadBtn.className = 'reread-btn';
-                        rereadBtn.textContent = 'Reread';
-                        actions.appendChild(rereadBtn);
-                    }
-                } else {
-                    const existingBtn = actions.querySelector('.reread-btn');
-                    if (existingBtn) {
-                        existingBtn.remove();
-                    }
-                }
-            });
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            addRereadButtons();
-        });
-        
-        document.querySelectorAll('.reading-status-select').forEach(select => {
-            select.addEventListener('change', function() {
-                const manhwaId = this.getAttribute('data-manhwa-id');
-                const readingStatus = this.value;
-                
-                if (readingStatus === 'Reread') {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    
-                    const formData = new FormData();
-                    formData.append('manhwa_id', manhwaId);
-                    formData.append('reading_status', 'Reread');
-                    
-                    fetch('update_reading_status.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success && data.reading_link) {
-                            window.open(data.reading_link, '_blank');
-                            
-                            window.location.reload();
-                        } else {
-                            window.location.reload();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-                    
-                    return false;
-                }
-            });
-        });
-    </script>
+  <footer>
+    <p>&copy; <?php echo date('Y'); ?> — The Obscured Index. All rights reserved.</p>
+  </footer>
+</div>
 </body>
 </html>

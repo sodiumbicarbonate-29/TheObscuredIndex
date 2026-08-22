@@ -176,16 +176,16 @@ header {
 <?php
 // Determine base path based on current location
 $base_path = '';
-if (strpos($_SERVER['PHP_SELF'], '/IN/') !== false) {
-    if (strpos($_SERVER['PHP_SELF'], '/IN/secret-shelf/') !== false) {
-        $base_path = '../../';
-    } else {
-        $base_path = '../';
-    }
+if (strpos($_SERVER['PHP_SELF'], '/IN/api/') !== false) {
+    $base_path = '../../';
+} elseif (strpos($_SERVER['PHP_SELF'], '/IN/secret-shelf/') !== false) {
+    $base_path = '../../';
+} elseif (strpos($_SERVER['PHP_SELF'], '/IN/') !== false) {
+    $base_path = '../';
 }
-$home_path = $base_path . (strpos($_SERVER['PHP_SELF'], '/IN/') !== false ? 'IN/home.php' : 'index.php');
-$library_path = $base_path . 'IN/library.php';
-$add_path = $base_path . 'IN/add_manhwa.php';
+$home_path = $base_path . 'IN/api/home.php';
+$library_path = $base_path . 'IN/api/library.php';
+$add_path = $base_path . 'IN/api/add_manhwa.php';
 $logout_path = $base_path . 'logout.php';
 $logo_path = $base_path . 'images/logo.png';
 ?>
