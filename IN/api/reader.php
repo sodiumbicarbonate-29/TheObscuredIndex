@@ -222,7 +222,7 @@ const manhwaId = <?php echo $manhwa_id; ?>;
 <?php if ($has_source): ?>
 
 const SOURCE = '<?php echo $has_comick ? "comick" : "mangadex"; ?>';
-const COMICK_HID = '<?php echo htmlspecialchars($manhwa['comick_hid'] ?? ''); ?>';
+const COMICK_HID = '<?php echo htmlspecialchars($manhwa["comick_hid"] ?? ""); ?>';
 
 let chapters = [];
 let activeChapterId = null;
