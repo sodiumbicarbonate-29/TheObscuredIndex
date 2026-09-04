@@ -8,6 +8,12 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once '../../includes/db_connect.php';
 
+function cover_src($img) {
+    if (empty($img)) return '';
+    if (str_starts_with($img, 'http')) return '/IN/api/img_proxy.php?url=' . urlencode($img);
+    return '../../' . htmlspecialchars($img);
+}
+
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 
@@ -216,7 +222,7 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
       <div class="card" data-genre="<?php echo htmlspecialchars($m['genre']); ?>">
         <div class="cover">
           <?php if (!empty($m['cover_image'])): ?>
-          <img src="<?php echo str_starts_with($m['cover_image'], 'http') ? htmlspecialchars($m['cover_image']) : '../../' . htmlspecialchars($m['cover_image']); ?>" alt="">
+          <img src="<?php echo cover_src($m['cover_image']); ?>" alt="">
           <?php endif; ?>
         </div>
         <div class="info">
@@ -241,7 +247,7 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
       <div class="card" data-genre="<?php echo htmlspecialchars($m['genre']); ?>">
         <div class="cover">
           <?php if (!empty($m['cover_image'])): ?>
-          <img src="<?php echo str_starts_with($m['cover_image'], 'http') ? htmlspecialchars($m['cover_image']) : '../../' . htmlspecialchars($m['cover_image']); ?>" alt="">
+          <img src="<?php echo cover_src($m['cover_image']); ?>" alt="">
           <?php endif; ?>
         </div>
         <div class="info">
@@ -263,7 +269,7 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
       <div class="card" data-genre="<?php echo htmlspecialchars($m['genre']); ?>">
         <div class="cover">
           <?php if (!empty($m['cover_image'])): ?>
-          <img src="<?php echo str_starts_with($m['cover_image'], 'http') ? htmlspecialchars($m['cover_image']) : '../../' . htmlspecialchars($m['cover_image']); ?>" alt="">
+          <img src="<?php echo cover_src($m['cover_image']); ?>" alt="">
           <?php endif; ?>
         </div>
         <div class="info">

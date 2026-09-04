@@ -249,7 +249,7 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
     <div class="grid size-md" id="items-grid">
       <?php while ($m = mysqli_fetch_assoc($result)): ?>
       <?php
-        $cover_src = !empty($m['cover_image']) ? (str_starts_with($m['cover_image'], 'http') ? htmlspecialchars($m['cover_image']) : '../../' . htmlspecialchars($m['cover_image'])) : '';
+        $cover_src = !empty($m['cover_image']) ? (str_starts_with($m['cover_image'], 'http') ? '/IN/api/img_proxy.php?url=' . urlencode($m['cover_image']) : '../../' . htmlspecialchars($m['cover_image'])) : '';
         $sc = getStatusColor($m['status']);
       ?>
       <a href="view_manhwa.php?id=<?php echo $m['manhwa_id']; ?>" class="card">
@@ -273,7 +273,7 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
     <div class="list" id="items-list" style="display:none">
       <?php while ($m = mysqli_fetch_assoc($result)): ?>
       <?php
-        $cover_src = !empty($m['cover_image']) ? (str_starts_with($m['cover_image'], 'http') ? htmlspecialchars($m['cover_image']) : '../../' . htmlspecialchars($m['cover_image'])) : '';
+        $cover_src = !empty($m['cover_image']) ? (str_starts_with($m['cover_image'], 'http') ? '/IN/api/img_proxy.php?url=' . urlencode($m['cover_image']) : '../../' . htmlspecialchars($m['cover_image'])) : '';
         $sc = getStatusColor($m['status']);
       ?>
       <a href="view_manhwa.php?id=<?php echo $m['manhwa_id']; ?>" class="list-item">
