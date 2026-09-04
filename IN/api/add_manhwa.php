@@ -32,16 +32,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (mysqli_num_rows(mysqli_stmt_get_result($check)) > 0) {
             $error = "This manhwa already exists in your library";
         } else {
-            // Handle cover upload or external URL
             $cover_image = "";
-            if (isset($_FILES['cover']) && $_FILES['cover']['error'] == 0) {
-                $upload_dir = "../../uploads/covers/";
-                $ext = pathinfo($_FILES['cover']['name'], PATHINFO_EXTENSION);
-                $filename = uniqid() . "." . $ext;
-                if (move_uploaded_file($_FILES['cover']['tmp_name'], $upload_dir . $filename)) {
-                    $cover_image = "uploads/covers/" . $filename;
-                }
-            } elseif (!empty($_POST['cover_url'])) {
+            if (!empty($_POST['cover_url'])) {
                 $url = filter_var($_POST['cover_url'], FILTER_VALIDATE_URL);
                 if ($url) $cover_image = $url;
             }
@@ -139,13 +131,16 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
     <?php endif; ?>
 
     <div class="form-card">
-      <form method="POST" enctype="multipart/form-data" id="add-form">
+      <form method="POST" id="add-form">
         <input type="hidden" name="cover_url" id="cover_url">
         <div class="cover-upload">
-          <label id="cover-label">
-            <span>Drop cover art</span>
-            <input type="file" name="cover" accept="image/*" onchange="previewCover(this)">
+          <label id="cover-label" style="cursor:default;">
+            <span id="cover-placeholder">No cover selected</span>
           </label>
+        </div>
+        <div class="form-group">
+          <label>COVER IMAGE URL</label>
+          <input type="url" id="cover_url_input" placeholder="https://..." oninput="updateCoverPreview(this.value)">
         </div>
 
         <div class="form-group">
@@ -240,15 +235,17 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
 </div>
 
 <script>
-function previewCover(input) {
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const label = document.getElementById('cover-label');
-      label.style.backgroundImage = 'url(' + e.target.result + ')';
-      label.querySelector('span').style.display = 'none';
-    };
-    reader.readAsDataURL(input.files[0]);
+function updateCoverPreview(url) {
+  document.getElementById('cover_url').value = url;
+  const label = document.getElementById('cover-label');
+  if (url) {
+    label.style.backgroundImage = 'url(' + url + ')';
+    label.style.backgroundSize = 'cover';
+    label.style.backgroundPosition = 'center';
+    document.getElementById('cover-placeholder').style.display = 'none';
+  } else {
+    label.style.backgroundImage = '';
+    document.getElementById('cover-placeholder').style.display = '';
   }
 }
 
@@ -269,12 +266,9 @@ function toggleDates() {
   set('f-status', p.get('status'));
   const cover = p.get('cover');
   if (cover) {
-    document.getElementById('cover_url').value = cover;
-    const label = document.getElementById('cover-label');
-    label.style.backgroundImage = 'url(' + cover + ')';
-    label.style.backgroundSize = 'cover';
-    label.style.backgroundPosition = 'center';
-    label.querySelector('span').style.display = 'none';
+    const inp = document.getElementById('cover_url_input');
+    if (inp) inp.value = cover;
+    updateCoverPreview(cover);
   }
 })();
 </script>
