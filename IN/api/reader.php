@@ -17,7 +17,7 @@ $manhwa = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 if (!$manhwa) { header("Location: library.php"); exit(); }
 
 // Handle AJAX actions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_POST['action'])) {
     header('Content-Type: application/json');
     $action = $_POST['action'] ?? '';
 
@@ -244,10 +244,6 @@ async function loadChapterList() {
       data = (json.chapters ?? []).map(c => ({ id: c.hid, chapter: String(c.chap ?? '0'), title: c.title ?? '' }));
     } else {
       const res = await fetch('reader.php?id=' + manhwaId, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'action=get_chapters'
-      });
       data = await res.json();
       if (!Array.isArray(data) || data.error) { document.getElementById('chapter-list').innerHTML = '<div class="ch-list-header">CHAPTERS</div><div class="ch-loading">No chapters found. (' + (data.error || 'empty') + ')</div>'; return; }
     }
