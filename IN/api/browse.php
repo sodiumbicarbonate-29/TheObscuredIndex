@@ -296,7 +296,7 @@ function renderSource(src, data, append) {
 
 function cardHtml(src, i, r) {
   return `<div class="result-card" onclick="selectResult('${src}', ${i})">
-    <div class="cover"><img src="${escHtml(r.cover)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'"></div>
+    <div class="cover"><img src="${src === 'mangadex' && r.cover ? '/IN/api/img_proxy.php?url=' + encodeURIComponent(r.cover) : escHtml(r.cover)}" alt="" loading="lazy" onerror="this.style.display='none'"></div>
     <div class="info">
       <p class="title">${escHtml(r.title)}</p>
       <p class="author">${escHtml(r.author || '')}</p>
