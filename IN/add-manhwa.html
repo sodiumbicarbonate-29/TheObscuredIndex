@@ -32,26 +32,29 @@
 
   <main style="flex: 1; width: 100%; max-width: 640px; margin: 0 auto; padding: 36px 24px 60px;">
     <a href="library.html" style="display: inline-flex; align-items: center; gap: 6px; color: #c9bffc; text-decoration: none; font-size: 0.85rem; margin-bottom: 14px;">&larr; Back to Library</a>
-    <h1 style="font-family: 'Playfair Display', serif; font-weight: 500; color: #ffffff; font-size: 1.9rem; margin: 0 0 26px;">Add a New Manhwa</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px;">
+      <h1 style="font-family: 'Playfair Display', serif; font-weight: 500; color: #ffffff; font-size: 1.9rem; margin: 0;">Add a New Manhwa</h1>
+      <a href="browse.html" style="font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.04em; color: #c9bffc; text-decoration: none; border: 1px solid rgba(162,155,254,0.4); padding: 9px 18px; border-radius: 999px;">&#128269; BROWSE</a>
+    </div>
 
     <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 32px;">
       <div style="display: flex; justify-content: center; margin-bottom: 26px;">
         <image-slot id="add-manhwa-cover" shape="rounded" radius="8" placeholder="drop cover art" style="width: 160px; height: 240px;"></image-slot>
       </div>
 
-      <form style="display: flex; flex-direction: column; gap: 18px;">
+      <form style="display: flex; flex-direction: column; gap: 18px;" id="add-form">
         <div>
           <label style="display: block; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.06em; color: rgba(255,255,255,0.8); margin-bottom: 6px;">TITLE</label>
-          <input type="text" placeholder="Enter manhwa title" style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 0.9rem;" style-focus="outline: none; border-color: #a29bfe; background: rgba(255,255,255,0.14);">
+          <input id="f-title" type="text" placeholder="Enter manhwa title" style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 0.9rem;" style-focus="outline: none; border-color: #a29bfe; background: rgba(255,255,255,0.14);">
         </div>
         <div>
           <label style="display: block; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.06em; color: rgba(255,255,255,0.8); margin-bottom: 6px;">AUTHOR</label>
-          <input type="text" placeholder="Enter author's name" style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 0.9rem;" style-focus="outline: none; border-color: #a29bfe; background: rgba(255,255,255,0.14);">
+          <input id="f-author" type="text" placeholder="Enter author's name" style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 0.9rem;" style-focus="outline: none; border-color: #a29bfe; background: rgba(255,255,255,0.14);">
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
           <div>
             <label style="display: block; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.06em; color: rgba(255,255,255,0.8); margin-bottom: 6px;">STATUS</label>
-            <select style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #17111f; color: #fff; font-size: 0.9rem;">
+            <select id="f-status" style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #17111f; color: #fff; font-size: 0.9rem;">
               <option>Ongoing</option><option>Completed</option><option>Dropped</option><option>Hiatus</option>
             </select>
           </div>
@@ -92,7 +95,7 @@
 
         <div>
           <label style="display: block; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.06em; color: rgba(255,255,255,0.8); margin-bottom: 6px;">DESCRIPTION</label>
-          <textarea placeholder="Enter the manhwa's description here..." style="width: 100%; box-sizing: border-box; min-height: 120px; padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 0.9rem; font-family: inherit; resize: vertical;" style-focus="outline: none; border-color: #a29bfe; background: rgba(255,255,255,0.14);"></textarea>
+          <textarea id="f-description" placeholder="Enter the manhwa's description here..." style="width: 100%; box-sizing: border-box; min-height: 120px; padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 0.9rem; font-family: inherit; resize: vertical;" style-focus="outline: none; border-color: #a29bfe; background: rgba(255,255,255,0.14);"></textarea>
         </div>
 
         <div style="display: flex; gap: 14px; justify-content: center; margin-top: 8px;">
@@ -112,7 +115,25 @@
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
   state = { readingStatus: 'Plan to Read' };
+
+  componentDidMount() {
+    const p = new URLSearchParams(location.search);
+    if (!p.get('title')) return;
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    set('f-title', p.get('title'));
+    set('f-author', p.get('author'));
+    set('f-description', p.get('description'));
+    const statusEl = document.getElementById('f-status');
+    if (statusEl && p.get('status')) statusEl.value = p.get('status');
+    const cover = p.get('cover');
+    if (cover) {
+      const slot = document.getElementById('add-manhwa-cover');
+      if (slot) slot.setAttribute('src', cover);
+    }
+  }
+
   onReadingStatusChange = (e) => this.setState({ readingStatus: e.target.value });
+
   renderVals() {
     const s = this.state.readingStatus;
     return {

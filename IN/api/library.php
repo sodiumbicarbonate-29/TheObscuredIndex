@@ -102,23 +102,46 @@ h1 { font-family: 'Playfair Display', serif; font-weight: 500; color: #ffffff; f
 .status-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 30px; }
 .status-filters a { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.04em; padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.18); text-decoration: none; white-space: nowrap; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.75); }
 .status-filters a.active { background: linear-gradient(135deg, #a29bfe, #8a2be2); color: #17111f; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; }
-.card { text-decoration: none; display: block; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; transition: transform 0.2s; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+.toolbar-left { display: flex; align-items: center; gap: 8px; }
+.layout-btn { width: 34px; height: 34px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.45); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.layout-btn:hover, .layout-btn.active { background: rgba(162,155,254,0.12); border-color: rgba(162,155,254,0.4); color: #c9bffc; }
+.layout-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.size-slider { -webkit-appearance: none; appearance: none; width: 80px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.12); outline: none; cursor: pointer; }
+.size-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #a29bfe; cursor: pointer; }
+.size-label { font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.04em; color: rgba(255,255,255,0.35); }
+/* GRID */
+.grid { display: grid; gap: 16px; }
+.grid.size-sm { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+.grid.size-md { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.grid.size-lg { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.card { text-decoration: none; display: block; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; transition: transform 0.2s; }
 .card:hover { transform: translateY(-4px); }
-.card .cover { position: relative; height: 200px; background: #241f30; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.card .cover img { width: 100%; height: 100%; object-fit: cover; }
-.card .cover .status-badge { position: absolute; top: 10px; right: 10px; font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.03em; padding: 4px 10px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
-.card .info { padding: 14px; }
-.card h3 { margin: 0 0 4px; font-size: 0.9rem; color: #f5f3fb; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card .genre { margin: 0 0 8px; font-size: 0.75rem; color: #c9bffc; font-style: italic; }
-.card .reading-status { font-size: 0.7rem; color: rgba(255,255,255,0.6); }
+.card .cover { position: relative; aspect-ratio: 3/4; background: #241f30; overflow: hidden; }
+.card .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card .cover .status-badge { position: absolute; top: 8px; right: 8px; font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.03em; padding: 3px 8px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+.card .info { padding: 10px 10px 12px; }
+.card h3 { margin: 0 0 4px; font-size: 0.82rem; color: #f5f3fb; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .genre { margin: 0 0 4px; font-size: 0.7rem; color: #c9bffc; font-style: italic; }
+.card .reading-status { font-size: 0.68rem; color: rgba(255,255,255,0.5); }
+/* LIST */
+.list { display: flex; flex-direction: column; gap: 8px; }
+.list-item { text-decoration: none; display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 14px; transition: background 0.15s, border-color 0.15s; }
+.list-item:hover { background: rgba(255,255,255,0.07); border-color: rgba(162,155,254,0.3); }
+.list-item .list-cover { width: 42px; height: 60px; border-radius: 4px; overflow: hidden; background: #241f30; flex-shrink: 0; }
+.list-item .list-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.list-item .list-info { flex: 1; min-width: 0; }
+.list-item .list-title { font-size: 0.9rem; font-weight: 600; color: #f5f3fb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 0 3px; }
+.list-item .list-meta { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.list-item .list-genre { font-size: 0.72rem; color: #c9bffc; font-style: italic; }
+.list-item .list-reading { font-size: 0.7rem; color: rgba(255,255,255,0.45); }
+.list-item .list-badge { font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.03em; padding: 3px 10px; border-radius: 999px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
 .empty { text-align: center; padding: 60px 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; }
 .empty p { font-family: 'Playfair Display', serif; font-style: italic; color: rgba(255,255,255,0.6); font-size: 1.1rem; margin: 0; }
 footer { background: rgba(14,10,23,0.95); border-top: 1px solid rgba(255,255,255,0.08); padding: 20px 32px; text-align: center; }
 footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.05em; color: rgba(245,243,251,0.5); margin: 0; }
 @media (max-width: 768px) {
-  .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-  .card .cover { height: 180px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
 }
 </style>
 </head>
@@ -132,7 +155,7 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
     <nav>
       <a href="home.php">HOME</a>
       <a href="library.php" class="active">LIBRARY</a>
-      <a href="add_manhwa.php" class="btn">+ ADD NEW</a>
+      <a href="browse.php">BROWSE</a>
       <a href="../../logout.php">LOGOUT</a>
     </nav>
   </header>
@@ -145,9 +168,52 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
       <input type="text" name="search" placeholder="Search by title or author..." value="<?php echo htmlspecialchars($search); ?>">
       <select name="genre" onchange="this.form.submit()">
         <option value="all">All Genres</option>
-        <option value="BL" <?php echo $genre_filter == 'BL' ? 'selected' : ''; ?>>BL</option>
-        <option value="Straight" <?php echo $genre_filter == 'Straight' ? 'selected' : ''; ?>>Straight</option>
-        <option value="No Romance" <?php echo $genre_filter == 'No Romance' ? 'selected' : ''; ?>>No Romance</option>
+        <option value="Action" <?php echo $genre_filter=='Action'?'selected':''; ?>>Action</option>
+        <option value="Adventure" <?php echo $genre_filter=='Adventure'?'selected':''; ?>>Adventure</option>
+        <option value="BL" <?php echo $genre_filter=='BL'?'selected':''; ?>>BL</option>
+        <option value="Comedy" <?php echo $genre_filter=='Comedy'?'selected':''; ?>>Comedy</option>
+        <option value="Cooking" <?php echo $genre_filter=='Cooking'?'selected':''; ?>>Cooking</option>
+        <option value="Crime" <?php echo $genre_filter=='Crime'?'selected':''; ?>>Crime</option>
+        <option value="Delinquents" <?php echo $genre_filter=='Delinquents'?'selected':''; ?>>Delinquents</option>
+        <option value="Demons" <?php echo $genre_filter=='Demons'?'selected':''; ?>>Demons</option>
+        <option value="Drama" <?php echo $genre_filter=='Drama'?'selected':''; ?>>Drama</option>
+        <option value="Fantasy" <?php echo $genre_filter=='Fantasy'?'selected':''; ?>>Fantasy</option>
+        <option value="Genderswap" <?php echo $genre_filter=='Genderswap'?'selected':''; ?>>Genderswap</option>
+        <option value="GL" <?php echo $genre_filter=='GL'?'selected':''; ?>>GL</option>
+        <option value="Harem" <?php echo $genre_filter=='Harem'?'selected':''; ?>>Harem</option>
+        <option value="Historical" <?php echo $genre_filter=='Historical'?'selected':''; ?>>Historical</option>
+        <option value="Horror" <?php echo $genre_filter=='Horror'?'selected':''; ?>>Horror</option>
+        <option value="Isekai" <?php echo $genre_filter=='Isekai'?'selected':''; ?>>Isekai</option>
+        <option value="Mafia" <?php echo $genre_filter=='Mafia'?'selected':''; ?>>Mafia</option>
+        <option value="Magical Girls" <?php echo $genre_filter=='Magical Girls'?'selected':''; ?>>Magical Girls</option>
+        <option value="Martial Arts" <?php echo $genre_filter=='Martial Arts'?'selected':''; ?>>Martial Arts</option>
+        <option value="Mecha" <?php echo $genre_filter=='Mecha'?'selected':''; ?>>Mecha</option>
+        <option value="Medical" <?php echo $genre_filter=='Medical'?'selected':''; ?>>Medical</option>
+        <option value="Military" <?php echo $genre_filter=='Military'?'selected':''; ?>>Military</option>
+        <option value="Music" <?php echo $genre_filter=='Music'?'selected':''; ?>>Music</option>
+        <option value="Mystery" <?php echo $genre_filter=='Mystery'?'selected':''; ?>>Mystery</option>
+        <option value="No Romance" <?php echo $genre_filter=='No Romance'?'selected':''; ?>>No Romance</option>
+        <option value="Office Workers" <?php echo $genre_filter=='Office Workers'?'selected':''; ?>>Office Workers</option>
+        <option value="Philosophical" <?php echo $genre_filter=='Philosophical'?'selected':''; ?>>Philosophical</option>
+        <option value="Post-Apocalyptic" <?php echo $genre_filter=='Post-Apocalyptic'?'selected':''; ?>>Post-Apocalyptic</option>
+        <option value="Psychological" <?php echo $genre_filter=='Psychological'?'selected':''; ?>>Psychological</option>
+        <option value="Reincarnation" <?php echo $genre_filter=='Reincarnation'?'selected':''; ?>>Reincarnation</option>
+        <option value="Reverse Harem" <?php echo $genre_filter=='Reverse Harem'?'selected':''; ?>>Reverse Harem</option>
+        <option value="Romance" <?php echo $genre_filter=='Romance'?'selected':''; ?>>Romance</option>
+        <option value="Sci-Fi" <?php echo $genre_filter=='Sci-Fi'?'selected':''; ?>>Sci-Fi</option>
+        <option value="School Life" <?php echo $genre_filter=='School Life'?'selected':''; ?>>School Life</option>
+        <option value="Slice of Life" <?php echo $genre_filter=='Slice of Life'?'selected':''; ?>>Slice of Life</option>
+        <option value="Sports" <?php echo $genre_filter=='Sports'?'selected':''; ?>>Sports</option>
+        <option value="Superhero" <?php echo $genre_filter=='Superhero'?'selected':''; ?>>Superhero</option>
+        <option value="Supernatural" <?php echo $genre_filter=='Supernatural'?'selected':''; ?>>Supernatural</option>
+        <option value="Survival" <?php echo $genre_filter=='Survival'?'selected':''; ?>>Survival</option>
+        <option value="Thriller" <?php echo $genre_filter=='Thriller'?'selected':''; ?>>Thriller</option>
+        <option value="Time Travel" <?php echo $genre_filter=='Time Travel'?'selected':''; ?>>Time Travel</option>
+        <option value="Tragedy" <?php echo $genre_filter=='Tragedy'?'selected':''; ?>>Tragedy</option>
+        <option value="Vampires" <?php echo $genre_filter=='Vampires'?'selected':''; ?>>Vampires</option>
+        <option value="Villainess" <?php echo $genre_filter=='Villainess'?'selected':''; ?>>Villainess</option>
+        <option value="Wuxia" <?php echo $genre_filter=='Wuxia'?'selected':''; ?>>Wuxia</option>
+        <option value="Zombies" <?php echo $genre_filter=='Zombies'?'selected':''; ?>>Zombies</option>
       </select>
       <select name="status" onchange="this.form.submit()">
         <option value="all">All Status</option>
@@ -167,22 +233,59 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
     </div>
 
     <?php if ($total > 0): ?>
-    <div class="grid">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button class="layout-btn active" id="btn-grid" onclick="setLayout('grid')" title="Grid">
+          <svg viewBox="0 0 16 16"><rect x="0" y="0" width="7" height="7"/><rect x="9" y="0" width="7" height="7"/><rect x="0" y="9" width="7" height="7"/><rect x="9" y="9" width="7" height="7"/></svg>
+        </button>
+        <button class="layout-btn" id="btn-list" onclick="setLayout('list')" title="List">
+          <svg viewBox="0 0 16 16"><rect x="0" y="1" width="16" height="2"/><rect x="0" y="7" width="16" height="2"/><rect x="0" y="13" width="16" height="2"/></svg>
+        </button>
+        <span class="size-label">SIZE</span>
+        <input type="range" class="size-slider" id="size-slider" min="0" max="2" step="1" value="1" oninput="setSize(this.value)">
+      </div>
+    </div>
+
+    <div class="grid size-md" id="items-grid">
       <?php while ($m = mysqli_fetch_assoc($result)): ?>
+      <?php
+        $cover_src = !empty($m['cover_image']) ? (str_starts_with($m['cover_image'], 'http') ? htmlspecialchars($m['cover_image']) : '../../' . htmlspecialchars($m['cover_image'])) : '';
+        $sc = getStatusColor($m['status']);
+      ?>
       <a href="view_manhwa.php?id=<?php echo $m['manhwa_id']; ?>" class="card">
         <div class="cover">
-          <?php if (!empty($m['cover_image'])): ?>
-          <img src="../../<?php echo htmlspecialchars($m['cover_image']); ?>" alt="">
-          <?php endif; ?>
-          <span class="status-badge" style="background: <?php echo getStatusColor($m['status']); ?>; color: #17111f;"><?php echo htmlspecialchars($m['status']); ?></span>
+          <?php if ($cover_src): ?><img src="<?php echo $cover_src; ?>" alt="" loading="lazy"><?php endif; ?>
+          <span class="status-badge" style="background:<?php echo $sc; ?>;color:#17111f;"><?php echo htmlspecialchars($m['status']); ?></span>
         </div>
         <div class="info">
           <h3><?php echo htmlspecialchars($m['title']); ?></h3>
           <p class="genre"><?php echo htmlspecialchars($m['genre'] ?: 'No genre'); ?></p>
-          <?php if (!empty($m['reading_status'])): ?>
-          <p class="reading-status"><?php echo htmlspecialchars($m['reading_status']); ?></p>
-          <?php endif; ?>
+          <?php if (!empty($m['reading_status'])): ?><p class="reading-status"><?php echo htmlspecialchars($m['reading_status']); ?></p><?php endif; ?>
         </div>
+      </a>
+      <?php endwhile; ?>
+    </div>
+
+    <?php
+    // Reset result pointer for list view
+    mysqli_data_seek($result, 0);
+    ?>
+    <div class="list" id="items-list" style="display:none">
+      <?php while ($m = mysqli_fetch_assoc($result)): ?>
+      <?php
+        $cover_src = !empty($m['cover_image']) ? (str_starts_with($m['cover_image'], 'http') ? htmlspecialchars($m['cover_image']) : '../../' . htmlspecialchars($m['cover_image'])) : '';
+        $sc = getStatusColor($m['status']);
+      ?>
+      <a href="view_manhwa.php?id=<?php echo $m['manhwa_id']; ?>" class="list-item">
+        <div class="list-cover"><?php if ($cover_src): ?><img src="<?php echo $cover_src; ?>" alt="" loading="lazy"><?php endif; ?></div>
+        <div class="list-info">
+          <p class="list-title"><?php echo htmlspecialchars($m['title']); ?></p>
+          <div class="list-meta">
+            <span class="list-genre"><?php echo htmlspecialchars($m['genre'] ?: 'No genre'); ?></span>
+            <?php if (!empty($m['reading_status'])): ?><span class="list-reading"><?php echo htmlspecialchars($m['reading_status']); ?></span><?php endif; ?>
+          </div>
+        </div>
+        <span class="list-badge" style="background:<?php echo $sc; ?>22;color:<?php echo $sc; ?>;border:1px solid <?php echo $sc; ?>44;"><?php echo htmlspecialchars($m['status']); ?></span>
       </a>
       <?php endwhile; ?>
     </div>
@@ -197,5 +300,44 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
     <p>&copy; <?php echo date('Y'); ?> — The Obscured Index. All rights reserved.</p>
   </footer>
 </div>
+<script>
+const SIZES = ['size-sm', 'size-md', 'size-lg'];
+let currentLayout = localStorage.getItem('lib_layout') || 'grid';
+let currentSize   = parseInt(localStorage.getItem('lib_size') ?? '1');
+
+function setLayout(l) {
+  currentLayout = l;
+  localStorage.setItem('lib_layout', l);
+  applyLayout();
+}
+
+function setSize(v) {
+  currentSize = parseInt(v);
+  localStorage.setItem('lib_size', currentSize);
+  applyLayout();
+}
+
+function applyLayout() {
+  const grid = document.getElementById('items-grid');
+  const list = document.getElementById('items-list');
+  const slider = document.getElementById('size-slider');
+  const btnGrid = document.getElementById('btn-grid');
+  const btnList = document.getElementById('btn-list');
+  if (!grid) return;
+
+  const isGrid = currentLayout === 'grid';
+  grid.style.display = isGrid ? '' : 'none';
+  list.style.display  = isGrid ? 'none' : '';
+  btnGrid.classList.toggle('active', isGrid);
+  btnList.classList.toggle('active', !isGrid);
+  slider.style.display = isGrid ? '' : 'none';
+  slider.value = currentSize;
+
+  grid.classList.remove(...SIZES);
+  grid.classList.add(SIZES[currentSize]);
+}
+
+applyLayout();
+</script>
 </body>
 </html>

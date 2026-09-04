@@ -134,13 +134,13 @@ h1 a { text-decoration: none; font-size: 1.3rem; vertical-align: middle; }
 .genres button.active { background: linear-gradient(135deg, #a29bfe, #8a2be2); color: #17111f; }
 .section-title { font-family: 'Cinzel', serif; color: #f0ecfb; font-size: 1.15rem; letter-spacing: 0.03em; margin: 0 0 16px; display: flex; justify-content: space-between; align-items: baseline; }
 .section-title a { font-family: 'Segoe UI', sans-serif; font-size: 0.8rem; color: #c9bffc; text-decoration: none; font-weight: 600; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; margin-bottom: 40px; }
-.card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
-.card .cover { height: 180px; background: #241f30; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.card .cover img { width: 100%; height: 100%; object-fit: cover; }
-.card .info { padding: 14px; }
-.card h3 { margin: 0 0 4px; font-size: 0.92rem; color: #f5f3fb; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card .genre { margin: 0 0 12px; font-size: 0.75rem; color: #c9bffc; font-style: italic; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; margin-bottom: 40px; }
+.card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; }
+.card .cover { position: relative; aspect-ratio: 3/4; background: #241f30; overflow: hidden; }
+.card .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card .info { padding: 10px 10px 12px; }
+.card h3 { margin: 0 0 4px; font-size: 0.82rem; color: #f5f3fb; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .genre { margin: 0 0 10px; font-size: 0.7rem; color: #c9bffc; font-style: italic; }
 .card .actions { display: flex; gap: 8px; }
 .btn-read { flex: 1; text-align: center; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.03em; background: linear-gradient(135deg, #a29bfe, #6c5ce7); color: #17111f; padding: 8px; border-radius: 999px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; }
 .btn-done { flex: 1; text-align: center; font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.03em; border: 1px solid rgba(255,255,255,0.25); background: transparent; color: rgba(255,255,255,0.75); padding: 8px; border-radius: 999px; font-weight: 600; cursor: pointer; }
@@ -150,8 +150,7 @@ h1 a { text-decoration: none; font-size: 1.3rem; vertical-align: middle; }
 footer { background: rgba(14,10,23,0.95); border-top: 1px solid rgba(255,255,255,0.08); padding: 20px 32px; text-align: center; }
 footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.05em; color: rgba(245,243,251,0.5); margin: 0; }
 @media (max-width: 768px) {
-  .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-  .card .cover { height: 150px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
   h1 { font-size: 1.5rem; }
 }
 </style>
@@ -166,7 +165,7 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
     <nav>
       <a href="home.php" class="active">HOME</a>
       <a href="library.php">LIBRARY</a>
-      <a href="add_manhwa.php" class="btn">+ ADD NEW</a>
+      <a href="browse.php">BROWSE</a>
       <a href="../../logout.php">LOGOUT</a>
     </nav>
   </header>
@@ -217,18 +216,14 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
       <div class="card" data-genre="<?php echo htmlspecialchars($m['genre']); ?>">
         <div class="cover">
           <?php if (!empty($m['cover_image'])): ?>
-          <img src="../../<?php echo htmlspecialchars($m['cover_image']); ?>" alt="">
+          <img src="<?php echo str_starts_with($m['cover_image'], 'http') ? htmlspecialchars($m['cover_image']) : '../../' . htmlspecialchars($m['cover_image']); ?>" alt="">
           <?php endif; ?>
         </div>
         <div class="info">
           <h3><?php echo htmlspecialchars($m['title']); ?></h3>
           <p class="genre"><?php echo htmlspecialchars($m['genre'] ?: 'No genre'); ?></p>
           <div class="actions">
-            <?php if (!empty($m['reading_link'])): ?>
-            <a href="<?php echo htmlspecialchars($m['reading_link']); ?>" target="_blank" class="btn-read">READ</a>
-            <?php else: ?>
-            <a href="view_manhwa.php?id=<?php echo $m['manhwa_id']; ?>" class="btn-read">VIEW</a>
-            <?php endif; ?>
+            <a href="view_manhwa.php?id=<?php echo $m['manhwa_id']; ?>" class="btn-read">READ</a>
             <button class="btn-done" onclick="markDone(<?php echo $m['manhwa_id']; ?>)">DONE</button>
           </div>
         </div>
@@ -246,17 +241,13 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
       <div class="card" data-genre="<?php echo htmlspecialchars($m['genre']); ?>">
         <div class="cover">
           <?php if (!empty($m['cover_image'])): ?>
-          <img src="../../<?php echo htmlspecialchars($m['cover_image']); ?>" alt="">
+          <img src="<?php echo str_starts_with($m['cover_image'], 'http') ? htmlspecialchars($m['cover_image']) : '../../' . htmlspecialchars($m['cover_image']); ?>" alt="">
           <?php endif; ?>
         </div>
         <div class="info">
           <h3><?php echo htmlspecialchars($m['title']); ?></h3>
           <p class="genre"><?php echo htmlspecialchars($m['genre'] ?: 'No genre'); ?></p>
-          <?php if (!empty($m['reading_link'])): ?>
-          <a href="<?php echo htmlspecialchars($m['reading_link']); ?>" target="_blank" class="btn-start" onclick="startReading(<?php echo $m['manhwa_id']; ?>)">START</a>
-          <?php else: ?>
-          <a href="view_manhwa.php?id=<?php echo $m['manhwa_id']; ?>" class="btn-start">VIEW</a>
-          <?php endif; ?>
+          <a href="view_manhwa.php?id=<?php echo $m['manhwa_id']; ?>" class="btn-start">START</a>
         </div>
       </div>
       <?php endwhile; ?>
@@ -272,17 +263,13 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
       <div class="card" data-genre="<?php echo htmlspecialchars($m['genre']); ?>">
         <div class="cover">
           <?php if (!empty($m['cover_image'])): ?>
-          <img src="../../<?php echo htmlspecialchars($m['cover_image']); ?>" alt="">
+          <img src="<?php echo str_starts_with($m['cover_image'], 'http') ? htmlspecialchars($m['cover_image']) : '../../' . htmlspecialchars($m['cover_image']); ?>" alt="">
           <?php endif; ?>
         </div>
         <div class="info">
           <h3><?php echo htmlspecialchars($m['title']); ?></h3>
           <p class="genre"><?php echo htmlspecialchars($m['genre'] ?: 'No genre'); ?></p>
-          <?php if (!empty($m['reading_link'])): ?>
-          <a href="<?php echo htmlspecialchars($m['reading_link']); ?>" target="_blank" class="btn-reread">REREAD</a>
-          <?php else: ?>
-          <a href="view_manhwa.php?id=<?php echo $m['manhwa_id']; ?>" class="btn-reread">VIEW</a>
-          <?php endif; ?>
+          <a href="view_manhwa.php?id=<?php echo $m['manhwa_id']; ?>" class="btn-reread">REREAD</a>
         </div>
       </div>
       <?php endwhile; ?>

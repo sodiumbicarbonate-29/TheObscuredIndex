@@ -66,7 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $author = !empty($_POST['new_author']) ? $_POST['new_author'] : null;
         $genre = $_POST['new_genre'];
         $status = $_POST['new_status'];
-        $reading_link = !empty($_POST['new_reading_link']) ? $_POST['new_reading_link'] : null;
         $description = !empty($_POST['new_description']) ? $_POST['new_description'] : null;
         $is_private = isset($_POST['private_manhwa']) ? 1 : 0;
         
@@ -102,10 +101,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $is_private = 1;
                 
                 // Insert directly into the main Manhwas table with is_private flag and user_id
-                $insert_query = "INSERT INTO Manhwas (user_id, title, author, status, genre, description, reading_link, cover_image, upload_date, is_private) 
-                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)";
+                $insert_query = "INSERT INTO Manhwas (user_id, title, author, status, genre, description, cover_image, upload_date, is_private) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)";
                 $insert_stmt = mysqli_prepare($conn, $insert_query);
-                mysqli_stmt_bind_param($insert_stmt, "issssssi", $user_id, $title, $author, $status, $genre, $description, $reading_link, $cover_image, $is_private);
+                mysqli_stmt_bind_param($insert_stmt, "issssssi", $user_id, $title, $author, $status, $genre, $description, $cover_image, $is_private);
                 
                 if (mysqli_stmt_execute($insert_stmt)) {
                     $message = "New manhwa \"" . htmlspecialchars($title) . "\" added directly to your secret shelf!";
@@ -606,7 +605,7 @@ if (isset($_GET['add']) && is_numeric($_GET['add'])) {
                             <div class="manhwa-item">
                                 <input type="checkbox" name="manhwa_ids[]" value="<?php echo $manhwa['manhwa_id']; ?>" class="manhwa-checkbox">
                                 <div class="manhwa-cover-small">
-                                    <img src="<?php echo !empty($manhwa['cover_image']) ? '../' . htmlspecialchars($manhwa['cover_image']) : '../../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
+                                    <img src="<?php echo !empty($manhwa['cover_image']) ? (str_starts_with($manhwa['cover_image'], 'http') ? htmlspecialchars($manhwa['cover_image']) : '../' . htmlspecialchars($manhwa['cover_image'])) : '../../images/default-cover.jpg'; ?>" alt="<?php echo htmlspecialchars($manhwa['title']); ?>">
                                 </div>
                                 <div class="manhwa-details">
                                     <h3 class="manhwa-title-small"><?php echo htmlspecialchars($manhwa['title']); ?></h3>
@@ -653,7 +652,6 @@ if (isset($_GET['add']) && is_numeric($_GET['add'])) {
                                     <option value="Dropped">Dropped</option>
                                     <option value="Hiatus">Hiatus</option>
                                 </select>
-                                <input type="url" name="new_reading_link" class="search-input" placeholder="Reading Link (optional)" style="margin-bottom: 10px;">
                                 <textarea name="new_description" class="search-input" placeholder="Description (optional)" style="min-height: 100px; margin-bottom: 10px;"></textarea>
                                 <div style="margin-bottom: 10px;">
                                     <label style="display: block; margin-bottom: 5px; color: #a29bfe;">Cover Image (optional)</label>

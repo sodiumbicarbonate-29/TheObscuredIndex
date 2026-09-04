@@ -18,7 +18,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $status = $_POST['status'];
     $genre = $_POST['genre'];
     $reading_status = $_POST['reading_status'];
-    $reading_link = trim($_POST['reading_link']);
     $description = trim($_POST['description']);
     $start_date = !empty($_POST['start_date']) ? $_POST['start_date'] : null;
     $finish_date = !empty($_POST['finish_date']) ? $_POST['finish_date'] : null;
@@ -33,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (mysqli_num_rows(mysqli_stmt_get_result($check)) > 0) {
             $error = "This manhwa already exists in your library";
         } else {
-            // Handle cover upload
+            // Handle cover upload or external URL
             $cover_image = "";
             if (isset($_FILES['cover']) && $_FILES['cover']['error'] == 0) {
                 $upload_dir = "../../uploads/covers/";
@@ -42,11 +41,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if (move_uploaded_file($_FILES['cover']['tmp_name'], $upload_dir . $filename)) {
                     $cover_image = "uploads/covers/" . $filename;
                 }
+            } elseif (!empty($_POST['cover_url'])) {
+                $url = filter_var($_POST['cover_url'], FILTER_VALIDATE_URL);
+                if ($url) $cover_image = $url;
             }
             
             // Insert manhwa
-            $insert = mysqli_prepare($conn, "INSERT INTO Manhwas (user_id, title, author, status, genre, description, cover_image, reading_link) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            mysqli_stmt_bind_param($insert, "isssssss", $user_id, $title, $author, $status, $genre, $description, $cover_image, $reading_link);
+            $insert = mysqli_prepare($conn, "INSERT INTO Manhwas (user_id, title, author, status, genre, description, cover_image) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            mysqli_stmt_bind_param($insert, "issssss", $user_id, $title, $author, $status, $genre, $description, $cover_image);
             
             if (mysqli_stmt_execute($insert)) {
                 $manhwa_id = mysqli_insert_id($conn);
@@ -119,6 +121,7 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
     <nav>
       <a href="home.php">HOME</a>
       <a href="library.php">LIBRARY</a>
+      <a href="browse.php">BROWSE</a>
       <a href="add_manhwa.php" class="btn">+ ADD NEW</a>
       <a href="../../logout.php">LOGOUT</a>
     </nav>
@@ -126,14 +129,18 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
 
   <main>
     <a href="library.php" class="back-link">&larr; Back to Library</a>
-    <h1>Add a New Manhwa</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;">
+      <h1>Add a New Manhwa</h1>
+      <a href="../browse.html" style="font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.04em;color:#c9bffc;text-decoration:none;border:1px solid rgba(162,155,254,0.4);padding:9px 18px;border-radius:999px;">BROWSE</a>
+    </div>
 
     <?php if (!empty($error)): ?>
     <div class="error"><?php echo htmlspecialchars($error); ?></div>
     <?php endif; ?>
 
     <div class="form-card">
-      <form method="POST" enctype="multipart/form-data">
+      <form method="POST" enctype="multipart/form-data" id="add-form">
+        <input type="hidden" name="cover_url" id="cover_url">
         <div class="cover-upload">
           <label id="cover-label">
             <span>Drop cover art</span>
@@ -143,18 +150,18 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
 
         <div class="form-group">
           <label>TITLE</label>
-          <input type="text" name="title" placeholder="Enter manhwa title" required>
+          <input type="text" name="title" id="f-title" placeholder="Enter manhwa title" required>
         </div>
 
         <div class="form-group">
           <label>AUTHOR</label>
-          <input type="text" name="author" placeholder="Enter author's name">
+          <input type="text" name="author" id="f-author" placeholder="Enter author's name">
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label>STATUS</label>
-            <select name="status">
+            <select name="status" id="f-status">
               <option value="Ongoing">Ongoing</option>
               <option value="Completed">Completed</option>
               <option value="Hiatus">Hiatus</option>
@@ -164,9 +171,33 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
           <div class="form-group">
             <label>GENRE</label>
             <select name="genre">
+              <option value="Action">Action</option>
+              <option value="Adventure">Adventure</option>
               <option value="BL">BL</option>
-              <option value="Straight">Straight</option>
+              <option value="Comedy">Comedy</option>
+              <option value="Drama">Drama</option>
+              <option value="Fantasy">Fantasy</option>
+              <option value="GL">GL</option>
+              <option value="Harem">Harem</option>
+              <option value="Historical">Historical</option>
+              <option value="Horror">Horror</option>
+              <option value="Isekai">Isekai</option>
+              <option value="Martial Arts">Martial Arts</option>
+              <option value="Mecha">Mecha</option>
+              <option value="Military">Military</option>
+              <option value="Mystery">Mystery</option>
               <option value="No Romance">No Romance</option>
+              <option value="Psychological">Psychological</option>
+              <option value="Romance">Romance</option>
+              <option value="Sci-Fi">Sci-Fi</option>
+              <option value="Slice of Life">Slice of Life</option>
+              <option value="Sports">Sports</option>
+              <option value="Straight">Straight</option>
+              <option value="Supernatural">Supernatural</option>
+              <option value="Thriller">Thriller</option>
+              <option value="Tragedy">Tragedy</option>
+              <option value="Villainess">Villainess</option>
+              <option value="Wuxia">Wuxia</option>
             </select>
           </div>
         </div>
@@ -191,13 +222,8 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.0
         </div>
 
         <div class="form-group">
-          <label>READING LINK</label>
-          <input type="url" name="reading_link" placeholder="https://example.com/read/manhwa-title">
-        </div>
-
-        <div class="form-group">
           <label>DESCRIPTION</label>
-          <textarea name="description" placeholder="Enter the manhwa's description here..."></textarea>
+          <textarea name="description" id="f-description" placeholder="Enter the manhwa's description here..."></textarea>
         </div>
 
         <div class="form-actions">
@@ -231,6 +257,26 @@ function toggleDates() {
   document.getElementById('start_date_group').style.display = (status === 'Currently Reading' || status === 'Done') ? 'block' : 'none';
   document.getElementById('finish_date_group').style.display = status === 'Done' ? 'block' : 'none';
 }
+
+// Auto-fill from browse
+(function() {
+  const p = new URLSearchParams(location.search);
+  if (!p.get('title')) return;
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  set('f-title', p.get('title'));
+  set('f-author', p.get('author'));
+  set('f-description', p.get('description'));
+  set('f-status', p.get('status'));
+  const cover = p.get('cover');
+  if (cover) {
+    document.getElementById('cover_url').value = cover;
+    const label = document.getElementById('cover-label');
+    label.style.backgroundImage = 'url(' + cover + ')';
+    label.style.backgroundSize = 'cover';
+    label.style.backgroundPosition = 'center';
+    label.querySelector('span').style.display = 'none';
+  }
+})();
 </script>
 </body>
 </html>

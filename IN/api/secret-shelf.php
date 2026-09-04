@@ -28,8 +28,7 @@ if (mysqli_num_rows($access_result) == 0) {
     exit();
 }
 
-$query = "SELECT sm.*, m.title, m.author, m.status, m.genre, m.cover_image, m.reading_link,
-          CASE WHEN m.reading_link IS NOT NULL AND m.reading_link != '' THEN 1 ELSE 0 END as has_reading_link
+$query = "SELECT sm.*, m.title, m.author, m.status, m.genre, m.cover_image
           FROM Secret_Manhwas sm
           JOIN Manhwas m ON sm.manhwa_id = m.manhwa_id
           WHERE sm.user_id = ? AND m.user_id = ?
@@ -451,9 +450,7 @@ $total_manhwas = mysqli_num_rows($result);
                                 <p class="manhwa-genre"><?php echo !empty($manhwa['genre']) ? htmlspecialchars($manhwa['genre']) : 'No genre'; ?></p>
                                 <div class="manhwa-actions">
                                     <a href="view_manhwa.php?id=<?php echo $manhwa['manhwa_id']; ?>" class="view-btn">View Details</a>
-                                    <?php if ($manhwa['has_reading_link']): ?>
-                                        <a href="<?php echo htmlspecialchars($manhwa['reading_link']); ?>" target="_blank" class="read-btn">Read</a>
-                                    <?php endif; ?>
+                                    <a href="reader.php?id=<?php echo $manhwa['manhwa_id']; ?>" class="read-btn">Read</a>
                                 </div>
                             </div>
                         </div>

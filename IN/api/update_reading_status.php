@@ -23,14 +23,6 @@ $current_date = date('Y-m-d');
 
 // Check if this is a reread action
 if (isset($_POST['reading_status']) && $_POST['reading_status'] == 'Reread') {
-    // Get the reading link
-    $link_query = "SELECT reading_link FROM Manhwas WHERE manhwa_id = ?";
-    $link_stmt = mysqli_prepare($conn, $link_query);
-    mysqli_stmt_bind_param($link_stmt, "i", $manhwa_id);
-    mysqli_stmt_execute($link_stmt);
-    $link_result = mysqli_stmt_get_result($link_stmt);
-    $manhwa = mysqli_fetch_assoc($link_result);
-    
     // Update reading status to Currently Reading
     $update_query = "UPDATE User_Reading_Status SET 
                     reading_status = 'Currently Reading', 
@@ -51,7 +43,7 @@ if (isset($_POST['reading_status']) && $_POST['reading_status'] == 'Reread') {
     
     header('Content-Type: application/json');
     if ($result) {
-        echo json_encode(['success' => true, 'reading_link' => $manhwa['reading_link'] ?? '']);
+        echo json_encode(['success' => true]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Failed to update status']);
     }

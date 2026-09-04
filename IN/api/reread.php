@@ -44,13 +44,8 @@ $update_stmt = mysqli_prepare($conn, $update_query);
 mysqli_stmt_bind_param($update_stmt, "sii", $current_date, $user_id, $manhwa_id);
 mysqli_stmt_execute($update_stmt);
 
-if (!empty($manhwa['reading_link'])) {
-    echo "<script>
-        window.open('" . htmlspecialchars($manhwa['reading_link']) . "', '_blank');
-        window.location.href = 'library.php';
-    </script>";
-    exit();
-} else {
+header('Location: library.php');
+exit();} else {
     header("Location: library.php");
     exit();
 }
