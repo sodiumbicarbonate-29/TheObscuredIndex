@@ -210,7 +210,7 @@ footer p { font-family: 'Cinzel', serif; font-size: 0.75rem; color: rgba(245,243
 <div class="hero">
   <?php 
   $cover = !empty($manhwa['cover_image']) 
-    ? (str_starts_with($manhwa['cover_image'], 'http') ? $manhwa['cover_image'] : '../../' . htmlspecialchars($manhwa['cover_image']))
+    ? (str_starts_with($manhwa['cover_image'], 'http') ? '/IN/api/img_proxy.php?url=' . urlencode($manhwa['cover_image']) : '../../' . htmlspecialchars($manhwa['cover_image']))
     : ''; 
   ?>
   <div class="hero-blur" <?php if ($cover): ?>style="background-image: url('<?php echo $cover; ?>')"<?php endif; ?>></div>
