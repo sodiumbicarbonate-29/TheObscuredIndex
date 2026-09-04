@@ -45,7 +45,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $url = "https://api.mangadex.org/manga/{$mdx_id}/feed?translatedLanguage[]=en&order[chapter]=asc&limit=500&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&contentRating[]=pornographic";
         $ch = curl_init($url);
-        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 15, CURLOPT_SSL_VERIFYPEER => false, CURLOPT_USERAGENT => 'TheObscuredIndex/1.0']);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 15,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            CURLOPT_HTTPHEADER => [
+                'Accept: application/json',
+                'Origin: https://mangadex.org',
+                'Referer: https://mangadex.org/',
+            ],
+            CURLOPT_FOLLOWLOCATION => true,
+        ]);
         $raw = curl_exec($ch);
         curl_close($ch);
 
@@ -67,7 +78,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$chapter_id) { echo json_encode(['error' => 'no_chapter']); exit(); }
 
         $ch = curl_init("https://api.mangadex.org/at-home/server/{$chapter_id}");
-        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_SSL_VERIFYPEER => false, CURLOPT_USERAGENT => 'TheObscuredIndex/1.0']);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 10,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            CURLOPT_HTTPHEADER => [
+                'Accept: application/json',
+                'Origin: https://mangadex.org',
+                'Referer: https://mangadex.org/',
+            ],
+            CURLOPT_FOLLOWLOCATION => true,
+        ]);
         $raw = curl_exec($ch);
         curl_close($ch);
 
@@ -216,15 +238,13 @@ async function loadChapterList() {
       const json = await res.json();
       data = (json.chapters ?? []).map(c => ({ id: c.hid, chapter: String(c.chap ?? '0'), title: c.title ?? '' }));
     } else {
-      const mdxId = '<?php echo htmlspecialchars($manhwa['mangadex_id'] ?? ''); ?>';
-      const res = await fetch(`https://api.mangadex.org/manga/${mdxId}/feed?translatedLanguage[]=en&order[chapter]=asc&limit=500&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&contentRating[]=pornographic`);
-      const json = await res.json();
-      const seen = {};
-      data = (json.data ?? []).reduce((acc, c) => {
-        const num = c.attributes.chapter ?? '0';
-        if (!seen[num]) { seen[num] = true; acc.push({ id: c.id, chapter: num, title: c.attributes.title ?? '' }); }
-        return acc;
-      }, []);
+      const res = await fetch('reader.php?id=' + manhwaId, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'action=get_chapters'
+      });
+      data = await res.json();
+      if (data.error) { document.getElementById('chapter-list').innerHTML = '<div class="ch-list-header">CHAPTERS</div><div class="ch-loading">No chapters found.</div>'; return; }
     }
     sessionStorage.setItem(CHAPTERS_KEY, JSON.stringify(data));
     initChapters(data);
@@ -259,11 +279,12 @@ async function loadChapter(i) {
       const json = await res.json();
       pages = (json.chapter?.images ?? []).map(img => `https://meo.comick.pictures/${img.b2key}`);
     } else {
-      const res = await fetch(`https://api.mangadex.org/at-home/server/${c.id}`);
-      const json = await res.json();
-      const base = json.baseUrl ?? '';
-      const hash = json.chapter?.hash ?? '';
-      pages = (json.chapter?.data ?? []).map(p => `${base}/data/${hash}/${p}`);
+      const res = await fetch('reader.php?id=' + manhwaId, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'action=get_pages&chapter_id=' + encodeURIComponent(c.id)
+      });
+      pages = await res.json();
     }
     if (!pages.length) { document.getElementById('pages-area').innerHTML = '<p class="page-msg">No pages found.</p>'; return; }
     document.getElementById('pages-area').innerHTML = pages.map(p => `<img src="${p}" loading="lazy" style="display:block">`).join('');
