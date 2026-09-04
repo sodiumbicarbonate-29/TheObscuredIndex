@@ -221,7 +221,7 @@ body { font-family: 'Segoe UI', sans-serif; background: #0e0a17; color: #fff; di
 const manhwaId = <?php echo $manhwa_id; ?>;
 <?php if ($has_source): ?>
 
-const SOURCE = '<?php echo $has_comick ? 'comick' : 'mangadex'; ?>';
+const SOURCE = '<?php echo $has_comick ? "comick" : "mangadex"; ?>';
 const COMICK_HID = '<?php echo htmlspecialchars($manhwa['comick_hid'] ?? ''); ?>';
 
 let chapters = [];
