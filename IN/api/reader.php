@@ -17,7 +17,7 @@ $manhwa = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 if (!$manhwa) { header("Location: library.php"); exit(); }
 
 // Handle AJAX actions
-if ($_SERVER['REQUEST_METHOD'] === 'POST' || isset($_POST['action'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
     $action = $_POST['action'] ?? '';
 
