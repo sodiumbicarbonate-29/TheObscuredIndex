@@ -212,18 +212,19 @@ async function loadChapterList() {
   try {
     let data;
     if (SOURCE === 'comick') {
-      // Client-side fetch — browser solves Cloudflare
       const res = await fetch(`https://api.comick.dev/comic/${COMICK_HID}/chapters?lang=en&limit=500&page=1`);
       const json = await res.json();
       data = (json.chapters ?? []).map(c => ({ id: c.hid, chapter: String(c.chap ?? '0'), title: c.title ?? '' }));
     } else {
-      const res = await fetch('reader.php?id=' + manhwaId, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'action=get_chapters'
-      });
-      data = await res.json();
-      if (data.error) { document.getElementById('chapter-list').innerHTML = '<div class="ch-list-header">CHAPTERS</div><div class="ch-loading">No chapters found.</div>'; return; }
+      const mdxId = '<?php echo htmlspecialchars($manhwa['mangadex_id'] ?? ''); ?>';
+      const res = await fetch(`https://api.mangadex.org/manga/${mdxId}/feed?translatedLanguage[]=en&order[chapter]=asc&limit=500&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&contentRating[]=pornographic`);
+      const json = await res.json();
+      const seen = {};
+      data = (json.data ?? []).reduce((acc, c) => {
+        const num = c.attributes.chapter ?? '0';
+        if (!seen[num]) { seen[num] = true; acc.push({ id: c.id, chapter: num, title: c.attributes.title ?? '' }); }
+        return acc;
+      }, []);
     }
     sessionStorage.setItem(CHAPTERS_KEY, JSON.stringify(data));
     initChapters(data);
@@ -258,12 +259,11 @@ async function loadChapter(i) {
       const json = await res.json();
       pages = (json.chapter?.images ?? []).map(img => `https://meo.comick.pictures/${img.b2key}`);
     } else {
-      const res = await fetch('reader.php?id=' + manhwaId, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'action=get_pages&chapter_id=' + encodeURIComponent(c.id)
-      });
-      pages = await res.json();
+      const res = await fetch(`https://api.mangadex.org/at-home/server/${c.id}`);
+      const json = await res.json();
+      const base = json.baseUrl ?? '';
+      const hash = json.chapter?.hash ?? '';
+      pages = (json.chapter?.data ?? []).map(p => `${base}/data/${hash}/${p}`);
     }
     if (!pages.length) { document.getElementById('pages-area').innerHTML = '<p class="page-msg">No pages found.</p>'; return; }
     document.getElementById('pages-area').innerHTML = pages.map(p => `<img src="${p}" loading="lazy" style="display:block">`).join('');
