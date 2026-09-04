@@ -58,9 +58,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             CURLOPT_FOLLOWLOCATION => true,
         ]);
         $raw = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
         $data = json_decode($raw, true);
+        if (!$data || !isset($data['data'])) {
+            echo json_encode(['error' => 'fetch_failed', 'http_code' => $http_code, 'raw' => substr($raw, 0, 300)]);
+            exit();
+        }
         $chapters = [];
         $seen = [];
         foreach (($data['data'] ?? []) as $c) {
@@ -244,7 +249,7 @@ async function loadChapterList() {
         body: 'action=get_chapters'
       });
       data = await res.json();
-      if (data.error) { document.getElementById('chapter-list').innerHTML = '<div class="ch-list-header">CHAPTERS</div><div class="ch-loading">No chapters found.</div>'; return; }
+      if (!Array.isArray(data) || data.error) { document.getElementById('chapter-list').innerHTML = '<div class="ch-list-header">CHAPTERS</div><div class="ch-loading">No chapters found. (' + (data.error || 'empty') + ')</div>'; return; }
     }
     sessionStorage.setItem(CHAPTERS_KEY, JSON.stringify(data));
     initChapters(data);
@@ -260,6 +265,7 @@ function initChapters(data) {
   ).join('');
   document.getElementById('chapter-list').innerHTML = '<div class="ch-list-header" style="display:flex;justify-content:space-between;align-items:center;"><span>CHAPTERS</span><button class="done-btn" onclick="markDone()" id="done-btn">MARK DONE</button></div>' + items;
   const savedIdx = chapters.findIndex(c => parseFloat(c.chapter) >= <?php echo $current_chapter ?: 0; ?>);
+  if (!chapters.length) { document.getElementById('chapter-list').innerHTML = '<div class="ch-list-header">CHAPTERS</div><div class="ch-loading">No chapters found.</div>'; return; }
   loadChapter(savedIdx >= 0 ? savedIdx : 0);
 }
 
